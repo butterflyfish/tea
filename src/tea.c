@@ -57,6 +57,9 @@ int main(int argc, char *argv[])
         len = read(0, &tbuf, 1);
         if( len > 0 )
         {
+            if ( tbuf == 29 ) /* esc key: Ctrl-] */
+                setup();
+
             write(fd, &tbuf, 1);
         }
     }

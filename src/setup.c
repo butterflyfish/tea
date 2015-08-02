@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 static struct termios savetio;
 
@@ -40,3 +41,42 @@ setup_stdin(void)
     return 0;
 }
 
+static void
+restore_stdin(void)
+{
+    if (isatty(0)) {
+        tcsetattr(0, TCSADRAIN, &savetio);
+    }
+    fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~O_NONBLOCK);
+}
+
+/*
+ * interactive shell
+ */
+void
+setup(void)
+{
+    char buf[1024];
+    restore_stdin();
+
+    putchar('\n');
+    while(1)
+    {
+        int i;
+        printf("tea> ");
+
+        fgets(buf, sizeof buf, stdin);
+
+        for ( i=0; ; i++)
+            if( !isspace(buf[i]) ) break;
+
+        /* to jump out setup */
+        if ( !buf[i] )
+            break;
+
+        if ( !strncmp(buf, "quit", 4) )
+            exit(0);
+    }
+
+    setup_stdin();
+}
