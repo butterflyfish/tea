@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <string.h>
 #include "serial.h"
+#include "setup.h"
 
 int foreach(struct serial* serial)
 {
@@ -38,16 +39,26 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    setup_stdin();
+
     while(1){
+
         int len;
+        char tbuf;
+
         len = read(fd, buf, sizeof buf);
-        if ( len < 0 )
+        if ( len <= 0 )
         {
             /* perror(ttyname(fd));
             exit(1); */
         }
         else write(1, buf, len);
-        sleep(1);
+
+        len = read(0, &tbuf, 1);
+        if( len > 0 )
+        {
+            write(fd, &tbuf, 1);
+        }
     }
     return 0;
 }
