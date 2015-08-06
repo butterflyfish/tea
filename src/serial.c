@@ -38,7 +38,7 @@ match_serial(const struct dirent *entry)
 }
 
 /*
-* add serial device to list
+* add serial port to list
 */
 static int
 add_serial(const char *name)
@@ -53,11 +53,11 @@ add_serial(const char *name)
 }
 
 /*
- * scan serial device and build linked list
+ * scan serial port and build linked list
  *
  * it must be invoked before other xxx_serial functions
  *
- * @return: the number of serial device
+ * @return: the number of serial port
  */
 int
 scan_serial(void)
@@ -219,7 +219,7 @@ serial_translate_baud(int inrate)
 }
 
 /*
- * show setup information of current serial device
+ * show setup information of current serial port
  * its output like utility stty
  *
  * @fd: where to write setup info

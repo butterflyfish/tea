@@ -15,17 +15,17 @@ struct serial {
 
 
 /*
- * scan serial device
+ * scan serial port
  *
  * it must be invoked before other xxx_serial functions
  *
- * @return: the number of serial device
+ * @return: the number of serial port
  */
 int
 scan_serial(void);
 
 /*
- * iterating serial device and executing callback foreach
+ * iterating serial port and executing callback foreach
  * it stop iterating if callback func return non-zero
  */
 int

@@ -28,14 +28,14 @@ int main(int argc, char *argv[])
     number = scan_serial();
     if ( number == 0 )
     {
-        fprintf(stderr, "No serial device is found!\n");
+        fprintf(stderr, "No serial port is found!\n");
         exit(1);
     }
 
     fd = foreach_serial(foreach);
     if ( !fd )
     {
-        fprintf(stderr, "No idel serial device!\n");
+        fprintf(stderr, "No idel serial port!\n");
         exit(1);
     }
 
