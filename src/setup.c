@@ -7,76 +7,86 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-static struct termios savetio;
+static struct termios origin;
 
+/*
+ * raw mode;
+ * input is not assembled into lines and special characters are not processed
+ *
+ * canonical:
+ * canonical (or cooked mode under BSD) is the default.
+ * input is assembled into lines and special characters are processed.
+ */
 int
-setup_stdin(void)
+enable_raw_mode(int ifd)
 {
-    struct termios tio;
-    if ( !isatty(0) )
+    struct termios raw;
+    if ( !isatty(ifd) )
         return -1;
 
-    tcgetattr(0, &savetio);
-    tio = savetio;
-    tio.c_oflag = 0;
-    tio.c_lflag = 0;
-    tio.c_iflag = savetio.c_iflag & ~(INLCR|IGNCR|ICRNL);
+    tcgetattr(ifd, &origin);
+    raw = origin;
 
-    tio.c_cc[VEOF] = _POSIX_VDISABLE;
-    tio.c_cc[VEOL] = _POSIX_VDISABLE;
-    tio.c_cc[VEOL2] = _POSIX_VDISABLE;
-    tio.c_cc[VERASE] = _POSIX_VDISABLE;
-    tio.c_cc[VWERASE] = _POSIX_VDISABLE;
-    tio.c_cc[VKILL] = _POSIX_VDISABLE;
-    tio.c_cc[VREPRINT] = _POSIX_VDISABLE;
-    tio.c_cc[VINTR] = _POSIX_VDISABLE;
-    tio.c_cc[VQUIT] = _POSIX_VDISABLE;
-    tio.c_cc[VSUSP] = _POSIX_VDISABLE;
-    tio.c_cc[VLNEXT] = _POSIX_VDISABLE;
-    tio.c_cc[VDISCARD] = _POSIX_VDISABLE;
+    raw.c_oflag = 0;
+    raw.c_lflag = 0;
 
-    tcsetattr(0, TCSADRAIN, &tio);
+    /* input mode
+     * no NL to CR, no CR to NL
+     * no XON/XOFF software flow control
+     */
+    raw.c_iflag &= ~(INLCR | ICRNL | IGNCR | IXON);
 
-    fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0)|O_NONBLOCK);
+    raw.c_cc[VEOF] = _POSIX_VDISABLE;
+    raw.c_cc[VEOL] = _POSIX_VDISABLE;
+    raw.c_cc[VEOL2] = _POSIX_VDISABLE;
+    raw.c_cc[VERASE] = _POSIX_VDISABLE;
+    raw.c_cc[VWERASE] = _POSIX_VDISABLE;
+    raw.c_cc[VKILL] = _POSIX_VDISABLE;
+    raw.c_cc[VREPRINT] = _POSIX_VDISABLE;
+    raw.c_cc[VINTR] = _POSIX_VDISABLE;
+    raw.c_cc[VQUIT] = _POSIX_VDISABLE;
+    raw.c_cc[VSUSP] = _POSIX_VDISABLE;
+    raw.c_cc[VLNEXT] = _POSIX_VDISABLE;
+    raw.c_cc[VDISCARD] = _POSIX_VDISABLE;
+
+    tcsetattr(ifd, TCSAFLUSH, &raw);
+
+    /* TODO: it should not place here */
+    fcntl(ifd, F_SETFL, fcntl(ifd, F_GETFL, 0)|O_NONBLOCK);
     return 0;
 }
 
-static void
-restore_stdin(void)
+void
+disable_raw_mode(int ifd)
 {
-    if (isatty(0)) {
-        tcsetattr(0, TCSADRAIN, &savetio);
-    }
-    fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~O_NONBLOCK);
+    tcsetattr(ifd, TCSAFLUSH, &origin);
+    fcntl(ifd, F_SETFL, fcntl(ifd, F_GETFL, 0) & ~O_NONBLOCK);
 }
 
 /*
  * interactive shell
  */
 void
-setup(void)
+setup_loop(int ifd, int ofd, int ser_fd)
 {
     char buf[1024];
-    restore_stdin();
 
-    putchar('\n');
+    disable_raw_mode(ifd);
+
+    write(ofd, "\n", sizeof "\n");
     while(1)
     {
-        int i;
-        printf("tea> ");
+        write(ofd, "tea> ", sizeof "tea> ");
 
-        fgets(buf, sizeof buf, stdin);
-
-        for ( i=0; ; i++)
-            if( !isspace(buf[i]) ) break;
+        read(ifd, buf, sizeof buf);
 
         /* to jump out setup */
-        if ( !buf[i] )
+        if ( buf[0] == '\n' )
             break;
 
         if ( !strncmp(buf, "quit", 4) )
             exit(0);
     }
 
-    setup_stdin();
+    enable_raw_mode(ifd);
 }
