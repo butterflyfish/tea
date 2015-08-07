@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    setup_stdin();
+    enable_raw_mode(0);
 
     while(1){
 
@@ -58,9 +58,9 @@ int main(int argc, char *argv[])
         if( len > 0 )
         {
             if ( tbuf == 29 ) /* esc key: Ctrl-] */
-                setup();
-
-            write(fd, &tbuf, 1);
+                setup_loop(0, 1, fd);
+            else
+                write(fd, &tbuf, 1);
         }
     }
     return 0;
