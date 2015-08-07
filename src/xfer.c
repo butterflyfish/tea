@@ -57,6 +57,10 @@ tty_read (EV_P_ struct ev_io *w, int revents)
 
     len = read(em->ifd, &buf, 1);
 
+    /* map DEL to Backspace */
+    if (buf == 127)
+        buf = 8;
+
      /* esc key: Ctrl-] */
     if ( buf == 29 ) {
 
