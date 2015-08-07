@@ -37,11 +37,18 @@ foreach_serial( int (*foreach)(struct serial *) );
 int
 open_serial(char *name);
 
+/*
+ * open one idle serial port
+ * return fd or error code
+ */
+int
+open_one_idle_serail( void );
 
 int
 close_serial(int fd);
 
 void
 close_all_serials(void);
+
 #endif
 

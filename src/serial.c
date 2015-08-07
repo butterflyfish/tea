@@ -151,6 +151,23 @@ open_serial(char *name)
     return fd;
 }
 
+int
+open_one_idle_serail( void )
+{
+    struct serial *serial;
+    int fd;
+
+    SLIST_FOREACH(serial, &serial_head, node) {
+
+        fd = open_serial(serial->path);
+        if ( fd > 0 ) {
+            printf("open serial %s.\n", serial->path);
+            return fd;
+        }
+    }
+    return fd;
+}
+
 
 int
 close_serial(int fd)
