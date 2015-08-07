@@ -4,15 +4,6 @@
 #include <termios.h>
 #include <sys/queue.h>
 
-struct serial {
-
-    struct termios attr;
-
-    int fd;
-    char path[100];
-    SLIST_ENTRY(serial) node;
-};
-
 
 /*
  * scan serial port
@@ -24,12 +15,6 @@ struct serial {
 int
 scan_serial(void);
 
-/*
- * iterating serial port and executing callback foreach
- * it stop iterating if callback func return non-zero
- */
-int
-foreach_serial( int (*foreach)(struct serial *) );
 
 /*
  * open serial and load default value

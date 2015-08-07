@@ -12,12 +12,17 @@
 #include "serial.h"
 
 
+struct serial {
+
+    struct termios attr;
+
+    int fd;
+    char path[100];
+    SLIST_ENTRY(serial) node;
+};
+
 static SLIST_HEAD(,serial) serial_head;
 
-/* point to serial used by this process
- * one process talk to one serial
- */
-struct serial *current;
 
 #define MATCH_SERIAL_STR0 "tty.usbserial"
 #define MATCH_SERIAL_STR1 "ttyS"
@@ -109,7 +114,6 @@ open_serial(char *name)
     SLIST_FOREACH(serial, &serial_head, node){
         if (!strcmp(serial->path, path)){
                 serial->fd = fd;
-                current = serial;
                 attr = &serial->attr;
                 break;
         }
@@ -236,7 +240,7 @@ serial_translate_baud(int inrate)
 }
 
 /*
- * show setup information of current serial port
+ * show setup information of serial port
  * its output like utility stty
  *
  * @fd: where to write setup info
