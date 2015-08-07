@@ -40,7 +40,6 @@ ser_read (EV_P_ struct ev_io *w, int revents)
 
     len = read(em->ser_fd, buf, sizeof buf);
     if( len <= 0) {
-        perror(ttyname(em->ser_fd));
         ev_io_stop(EV_A_ &em->ser_w);
         ev_io_stop(EV_A_ &em->tty_w);
     }
