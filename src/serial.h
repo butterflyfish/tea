@@ -42,7 +42,7 @@ open_serial(char *name);
  * return fd or error code
  */
 int
-open_one_idle_serail( void );
+open_one_idle_serial( void );
 
 int
 close_serial(int fd);

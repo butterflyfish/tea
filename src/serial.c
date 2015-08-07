@@ -152,7 +152,7 @@ open_serial(char *name)
 }
 
 int
-open_one_idle_serail( void )
+open_one_idle_serial( void )
 {
     struct serial *serial;
     int fd;

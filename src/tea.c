@@ -6,18 +6,6 @@
 #include "serial.h"
 #include "setup.h"
 
-int foreach(struct serial* serial)
-{
-    int fd;
-
-    fd = open_serial(serial->path);
-    if ( fd > 0 ) {
-        printf("open serial %s.\n", serial->path);
-        return fd;
-    }
-
-    return 0;
-}
 
 int main(int argc, char *argv[])
 {
@@ -32,7 +20,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    fd = foreach_serial(foreach);
+    fd = open_one_idle_serial();
     if ( !fd )
     {
         fprintf(stderr, "No idel serial port!\n");
