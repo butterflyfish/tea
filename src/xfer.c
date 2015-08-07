@@ -42,6 +42,7 @@ ser_read (EV_P_ struct ev_io *w, int revents)
     if( len <= 0) {
         ev_io_stop(EV_A_ &em->ser_w);
         ev_io_stop(EV_A_ &em->tty_w);
+        disable_raw_mode(em->ifd);
     }
     write(em->ofd, buf, len);
 }
