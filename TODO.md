@@ -1,8 +1,6 @@
 # TODO
 
-* asynchronous IO
 * add makefile
-* map Delete key to Backspace. only on MAC OS X ?
 * interactive commands
     * output to stderr
     * add engine
@@ -19,5 +17,3 @@
     * default setting. each serial port have its own setting
 * built-in TFTP server support
 * allow telnet connection to serial port
-
-* vim: add yank plugin. paste history
