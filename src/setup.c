@@ -2,7 +2,6 @@
 #include "setup.h"
 #include <unistd.h>
 #include <stdio.h>
-#include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -51,8 +50,6 @@ enable_raw_mode(int ifd)
 
     tcsetattr(ifd, TCSAFLUSH, &raw);
 
-    /* TODO: it should not place here */
-    fcntl(ifd, F_SETFL, fcntl(ifd, F_GETFL, 0)|O_NONBLOCK);
     return 0;
 }
 
@@ -60,7 +57,6 @@ void
 disable_raw_mode(int ifd)
 {
     tcsetattr(ifd, TCSAFLUSH, &origin);
-    fcntl(ifd, F_SETFL, fcntl(ifd, F_GETFL, 0) & ~O_NONBLOCK);
 }
 
 /*

@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <string.h>
 #include "serial.h"
-#include "setup.h"
+#include "xfer.h"
 
 
 int main(int argc, char *argv[])
@@ -27,29 +27,9 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    enable_raw_mode(0);
+    xfer_init();
+    new_emulator(fd, 0, 1);
 
-    while(1){
-
-        int len;
-        char tbuf;
-
-        len = read(fd, buf, sizeof buf);
-        if ( len <= 0 )
-        {
-            /* perror(ttyname(fd));
-            exit(1); */
-        }
-        else write(1, buf, len);
-
-        len = read(0, &tbuf, 1);
-        if( len > 0 )
-        {
-            if ( tbuf == 29 ) /* esc key: Ctrl-] */
-                setup_loop(0, 1, fd);
-            else
-                write(fd, &tbuf, 1);
-        }
-    }
+    xfer_loop();
     return 0;
 }
