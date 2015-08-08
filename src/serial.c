@@ -190,23 +190,6 @@ close_all_serials(void)
     }
 }
 
-int
-foreach_serial(int (*foreach)(struct serial *))
-{
-    struct serial *serial;
-    int ret = -1;
-
-    if (NULL == foreach)
-        return -1;
-
-    SLIST_FOREACH(serial, &serial_head, node) {
-        ret = foreach(serial);
-        if ( ret )
-            return ret;
-    }
-    return ret;
-}
-
 static int
 serial_translate_baud(int inrate)
 {
