@@ -38,6 +38,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static struct termios origin;
 
+#define USAGE \
+    "quit:    -- exit program\n" \
+    "Enter:   -- jump back\n"
 /*
  * raw mode;
  * input is not assembled into lines and special characters are not processed
@@ -102,7 +105,7 @@ setup_loop(int ifd, int ofd, int ser_fd)
     write(ofd, "\n", sizeof "\n");
     while(1)
     {
-        write(ofd, "tea> ", sizeof "tea> ");
+        write(ofd, "Tea> ", sizeof "Tea> ");
 
         read(ifd, buf, sizeof buf);
 
@@ -112,6 +115,8 @@ setup_loop(int ifd, int ofd, int ser_fd)
 
         if ( !strncmp(buf, "quit", 4) )
             exit(0);
+
+        write(ofd, USAGE, sizeof USAGE);
     }
 
     enable_raw_mode(ifd);
