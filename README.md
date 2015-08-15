@@ -8,6 +8,7 @@ It's a open source program licensed under four caluse BSD.
 * open one idle seril port automatically
 * exit program if serial port is removed
 * control termial. Trigger key is Ctrl-]
+    * jump back after press Enter
 
 ## How to build ?
 
