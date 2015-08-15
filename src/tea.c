@@ -33,13 +33,70 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <getopt.h>
 #include "serial.h"
 #include "xfer.h"
+
+static char *ver = "2005.8.15";
+
+static
+void usage()
+{
+    fprintf(stderr,
+            "Usage: tea [options]\n\n"
+            "--version:             Show version\n"
+            "--help|-h:             Help info\n"
+            "--device|-d:           Open this serial port. If no, try to open one automatically.\n"
+    );
+
+}
 
 int main(int argc, char *argv[])
 {
     int number;
     int fd;
+
+    int c;
+    int option_index = 0;
+
+    int version = 0;
+    char *device = NULL;
+
+    struct option long_options[] = {
+
+        {"version", no_argument,       &version, 1},
+        {"help",    no_argument,       0, 'h'},
+        {"device",  required_argument, 0, 'd'},
+        {0, 0, 0, 0}
+    };
+
+
+    while (1) {
+
+         c = getopt_long (argc, argv, "hd:",
+                          long_options, &option_index);
+
+        /* Detect the end of the options. */
+        if (c == -1)
+            break;
+
+        switch (c) {
+        case 0:
+        fprintf (stderr, "Version is %s\n", ver);
+        exit(1);
+
+        case 'h':
+        usage();
+        exit(1);
+
+        case 'd':
+        device = optarg;
+        break;
+
+        default:
+        exit(1);
+        }
+    }
 
     number = scan_serial();
     if ( number == 0 )
@@ -48,12 +105,13 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    fd = open_one_idle_serial();
+    fd = device ? open_serial(device) : open_one_idle_serial();
     if ( fd < 0 )
     {
-        fprintf(stderr, "No idle serial port!\n");
+        fprintf(stderr, "No %s serial port!\n", (fd == -ENOENT) ? "this": "idle");
         exit(1);
     }
+    fprintf(stderr, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
 
     xfer_init();
 
