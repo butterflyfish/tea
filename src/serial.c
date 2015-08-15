@@ -137,10 +137,10 @@ open_serial(char *name)
 
     fd = open(path, O_RDWR|O_NONBLOCK|O_EXLOCK, 0);
     if ( fd < 0 )
-        return -1;
+        return -errno;
 
     if ( flock(fd, LOCK_EX) )
-        return -1;
+        return -errno;
 
     SLIST_FOREACH(serial, &serial_head, node){
         if (!strcmp(serial->path, path)){
@@ -150,7 +150,7 @@ open_serial(char *name)
         }
     }
     if (!serial)
-        return -1;
+        return -ENOENT;
 
     if (tcgetattr(fd, attr))
     {
