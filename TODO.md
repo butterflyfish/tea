@@ -1,6 +1,5 @@
 # TODO
 
-* add makefile
 * interactive commands
     * output to stderr
     * add engine
