@@ -5,6 +5,7 @@ It's a open source program licensed under four caluse BSD.
 
 ## Features
 
+* works on Linux and Mac OS X
 * open one idle seril port automatically
 * exit program if serial port is removed
 * control termial. Trigger key is Ctrl-]
