@@ -88,6 +88,17 @@ add_serial(const char *name)
     return 0;
 }
 
+static int
+_open(char *name) {
+
+    char path[255];
+
+    sprintf(path, "%s%s", strncmp(name, "/dev/", sizeof "/dev/" - 1) ?
+            "/dev/" : "", name);
+
+    return open(path, O_RDWR|O_NONBLOCK, 0);
+}
+
 /*
  * scan serial port and build linked list
  *
@@ -102,6 +113,9 @@ scan_serial(void)
     int ret = 0;
     struct dirent **list;
 
+    int fd;
+    struct termios attr;
+
     /* init serail head */
     SLIST_INIT(&serial_head);
 
@@ -111,9 +125,22 @@ scan_serial(void)
         perror("scandir");
         exit(-1);
     } else {
-        ret = n;
+
         while (n--) {
-            add_serial(list[n]->d_name);
+
+            /* ensure it's connected */
+            fd = _open(list[n]->d_name);
+            if (fd) {
+
+                if ( 0 == tcgetattr(fd, &attr) ) {
+
+                    /* printf("add serial port %s\n", list[n]->d_name); */
+                    add_serial(list[n]->d_name);
+                    ret ++;
+                }
+                close(fd);
+            }
+
             free(list[n]);
         }
         free(list);
@@ -128,15 +155,11 @@ int
 open_serial(char *name)
 {
     int fd;
-    char path[255];
     struct serial *serial = NULL;
     struct termios *attr;
     struct flock lock, savelock;
 
-    sprintf(path, "%s%s", strncmp(name, "/dev/", sizeof "/dev/" - 1) ?
-            "/dev/" : "", name);
-
-    fd = open(path, O_RDWR|O_NONBLOCK, 0);
+    fd = _open(name);
     if ( fd < 0 )
         return fd;
 
@@ -156,12 +179,13 @@ open_serial(char *name)
     }
 
     SLIST_FOREACH(serial, &serial_head, node){
-        if (!strcmp(serial->path, path)){
+        if (strstr(serial->path, name)){
                 serial->fd = fd;
                 attr = &serial->attr;
                 break;
         }
     }
+
     if (!serial)
         return -ENOENT;
 
