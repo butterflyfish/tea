@@ -40,6 +40,6 @@ $(OBJDIR)/%.o: $(SRCDIR)/$(notdir %.c)
 	$(quiet)$(CC) $(CLAGS) $(CPPFLAGS) -c $< -o $@ > /dev/null
 
 $(BIN): $(OBJ)
-	$(quiet)$(CC) $(LDFLAGS) $^ -o $@
+	$(quiet)$(CC) $^ $(LDFLAGS) -o $@
 	$(quiet)echo move $@ to $(BINDIR)
 	$(quiet)mv $@ $(BINDIR)
