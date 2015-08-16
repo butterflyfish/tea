@@ -227,7 +227,7 @@ int
 open_one_idle_serial( void )
 {
     struct serial *serial;
-    int fd;
+    int fd = -ENOENT;;
 
     SLIST_FOREACH(serial, &serial_head, node) {
 
