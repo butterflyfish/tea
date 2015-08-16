@@ -131,16 +131,29 @@ open_serial(char *name)
     char path[255];
     struct serial *serial = NULL;
     struct termios *attr;
+    struct flock lock, savelock;
 
     sprintf(path, "%s%s", strncmp(name, "/dev/", sizeof "/dev/" - 1) ?
             "/dev/" : "", name);
 
-    fd = open(path, O_RDWR|O_NONBLOCK|O_EXLOCK, 0);
+    fd = open(path, O_RDWR|O_NONBLOCK, 0);
     if ( fd < 0 )
-        return -errno;
+        return fd;
 
-    if ( flock(fd, LOCK_EX) )
-        return -errno;
+    lock.l_type= F_WRLCK;
+    lock.l_start = 0;
+    lock.l_whence = SEEK_SET;
+    lock.l_len =0;
+    savelock = lock;
+    fcntl(fd, F_GETLK, &lock);
+
+    if (lock.l_type == F_WRLCK || lock.l_type == F_RDLCK)
+    {
+        /* printf("Process %d lock %s already!\n", lock.l_pid, name); */
+        return -EBUSY;
+    } else {
+        fcntl(fd, F_SETLK, &savelock);
+    }
 
     SLIST_FOREACH(serial, &serial_head, node){
         if (!strcmp(serial->path, path)){
@@ -207,7 +220,6 @@ open_one_idle_serial( void )
 int
 close_serial(int fd)
 {
-    flock(fd, LOCK_UN);
     return close(fd);
 }
 
