@@ -28,6 +28,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 BIN := tea
+tea_DIR = src
 
 LDFLAGS += -lev
 CFLAGS = -Wall -Werror -O3
