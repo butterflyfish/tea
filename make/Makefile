@@ -38,11 +38,14 @@ all: $(BIN)
 # find Where Makefile is
 where=$(dir $(shell readlink Makefile))
 
+# Redefine flags to avoid conflict with user's local definitions
+cppflags := $(CPPFLAGS)
+cflags   := $(CFLAGS)
+
 # load library
 include $(where)/default.mk
 include $(where)/function.mk
 include $(where)/object.c.mk
-
 
 # generate object rule for each $(BIN)
 $(eval $(foreach b,$(BIN), \

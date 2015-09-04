@@ -43,9 +43,9 @@ $1_OBJ+=$(t:%.c=$(OBJDIR)/%.o)
 -include $(DEPDIR)/$2/*.d
 
 $(OBJDIR)/%.o: %.c
-	$(quiet)$$(CC) -MM -MF $(DEPDIR)/$$*.d -MP -MT $$@ $$(CFLAGS) $$(CPPFLAGS) $$<
+	$(quiet)$$(CC) -MM -MF $(DEPDIR)/$$*.d -MP -MT $$@ $$(cflags) $$(cppflags) $$<
 	$(quiet)$(call colors,$(WHITE),Compile file $$<)
-	$(quiet)$$(CC) $$(CLAGS) $$(CPPFLAGS) -c $$< -o $$@ > /dev/null
+	$(quiet)$$(CC) $$(CLAGS) $$(cppflags) -c $$< -o $$@ > /dev/null
 
 endef
 
@@ -61,9 +61,9 @@ $(if $(findstring ./,$(dir $2)),, \
 -include $(DEPDIR)/$(basename $2).d
 
 $(OBJDIR)/$(basename $2).o: $2
-	$(quiet)$$(CC) -MM -MF $(DEPDIR)/$(basename $2).d -MP -MT $$@ $$(CFLAGS) $$(CPPFLAGS) $$<
+	$(quiet)$$(CC) -MM -MF $(DEPDIR)/$(basename $2).d -MP -MT $$@ $$(cflags) $$(cppflags) $$<
 	$(quiet)$(call colors,$(WHITE),Compile file $$<)
-	$(quiet)$$(CC) $$(CLAGS) $$(CPPFLAGS) -c $$< -o $$@ > /dev/null
+	$(quiet)$$(CC) $$(CLAGS) $$(cppflags) -c $$< -o $$@ > /dev/null
 
 $1_OBJ+=$(OBJDIR)/$(basename $2).o
 
