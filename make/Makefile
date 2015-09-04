@@ -29,8 +29,6 @@
 
 -include Config.mk config.mk
 
-quiet:=@
-
 .PHONY: all
 all: $(BIN)
 
@@ -43,7 +41,7 @@ cppflags := $(CPPFLAGS)
 cflags   := $(CFLAGS)
 
 # load library
-include $(where)/default.mk
+include $(where)/vars.mk
 include $(where)/function.mk
 include $(where)/object.c.mk
 
