@@ -34,7 +34,11 @@ quiet:=@
 .PHONY: all
 all: $(BIN)
 
-where := $(PWD)/make
+
+# find Where Makefile is
+where=$(dir $(shell readlink Makefile))
+
+# load library
 include $(where)/default.mk
 include $(where)/function.mk
 include $(where)/object.c.mk
