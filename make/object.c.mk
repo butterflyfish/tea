@@ -27,19 +27,54 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-SRC := $(wildcard $(SRCDIR)/*.c)
-OBJ := $(SRC:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
+# rules to compile c files under dir $2 for utility $1
+# $(eval $(call rule-compile-dir-c,utility_name,dir)
+define rule-compile-dir-c
 
--include $(DEPDIR)/*.d
+# create necessary dir
+$(shell $(MKDIR) $(OBJDIR)/$2)
+$(shell $(MKDIR) $(DEPDIR)/$2)
 
-$(OBJDIR)/%.o: $(SRCDIR)/$(notdir %.c)
-	$(quiet)$(call colors,$(WHITE),Generating dependency for $<)
-	$(quiet)$(CC) -MM -MF $(DEPDIR)/$*.d -MP -MT $@ $(CFLAGS) $(CPPFLAGS) $<
-	$(quiet)$(call colors,$(WHITE),Compile file $<)
-	$(quiet)$(CC) $(CLAGS) $(CPPFLAGS) -c $< -o $@ > /dev/null
+$(eval t:=$(wildcard $2/*.c))
+$1_OBJ+=$(t:%.c=$(OBJDIR)/%.o)
 
-$(BIN): $(OBJ)
-	$(quiet)$(CC) $^ $(LDFLAGS) -o $@
-	$(quiet)echo move $@ to $(BINDIR)
-	$(quiet)mv $@ $(BINDIR)
+# grab dependency
+-include $(DEPDIR)/$2/*.d
+
+$(OBJDIR)/%.o: %.c
+	$(quiet)$$(CC) -MM -MF $(DEPDIR)/$$*.d -MP -MT $$@ $$(CFLAGS) $$(CPPFLAGS) $$<
+	$(quiet)$(call colors,$(WHITE),Compile file $$<)
+	$(quiet)$$(CC) $$(CLAGS) $$(CPPFLAGS) -c $$< -o $$@ > /dev/null
+
+endef
+
+# rules to compile c files for utility $1
+# $(eval $(call rule-compile-c,utility_name,list)
+define rule-compile-c
+
+# create necessary dir
+$(if $(findstring ./,$(dir $2)),, \
+        $(shell $(MKDIR) $(OBJDIR)/$(dir $2)) $(shell $(MKDIR) $(DEPDIR)/$(dir $2)) )
+
+# grab dependency
+-include $(DEPDIR)/$(basename $2).d
+
+$(OBJDIR)/$(basename $2).o: $2
+	$(quiet)$$(CC) -MM -MF $(DEPDIR)/$(basename $2).d -MP -MT $$@ $$(CFLAGS) $$(CPPFLAGS) $$<
+	$(quiet)$(call colors,$(WHITE),Compile file $$<)
+	$(quiet)$$(CC) $$(CLAGS) $$(CPPFLAGS) -c $$< -o $$@ > /dev/null
+
+$1_OBJ+=$(OBJDIR)/$(basename $2).o
+
+endef
+
+# rules to produce final utility $1
+# $(eval $(call rule-produce-bin))
+define rule-produce-bin
+$1: $($1_OBJ)
+	$(quiet)$$(CC) $$^ $$(LDFLAGS) -o $$@
+	$(quiet)$(MKDIR) $(BINDIR)
+	$(quiet)mv $$@ $(BINDIR)
+	$(quiet)echo $$@ is produced under $(BINDIR)
+endef

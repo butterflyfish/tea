@@ -43,8 +43,16 @@ include $(where)/default.mk
 include $(where)/function.mk
 include $(where)/object.c.mk
 
-$(shell $(MKDIR) $(OBJDIR) $(DEPDIR) $(BINDIR))
 
+# generate object rule for each $(BIN)
+$(eval $(foreach b,$(BIN), \
+            $(if $($(BIN)_DIR), $(foreach d,$($(BIN)_DIR), $(call rule-compile-dir-c,$b,$d))) \
+            $(if $($(BIN)_SRC), $(foreach f,$($(BIN)_SRC), $(call rule-compile-c,$b,$f))) \
+        ) \
+)
+
+# generate target rule for each $(BIN)
+$(if $(BIN), $(foreach b, $(BIN), $(eval $(call rule-produce-bin,$b))))
 
 clean:
 	@find $(DEPDIR) -type f | xargs rm -f
