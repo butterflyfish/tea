@@ -29,6 +29,13 @@
 
 BIN := tea
 tea_DIR = src
+tea_SRC = deps/ek/kermit.c
 
 LDFLAGS += -lev
-CFLAGS = -Wall -Werror -O3
+
+#CFLAGS = -Wall -Werror -O3
+CFLAGS =  -O3
+
+# for deps/ek/kermit.c
+CPPFLAGS = -DNODEBUG
+CFLAGS += -I deps/ek
