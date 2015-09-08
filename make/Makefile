@@ -43,7 +43,7 @@ cflags   := $(CFLAGS)
 # load library
 include $(where)/vars.mk
 include $(where)/function.mk
-include $(where)/object.c.mk
+include $(where)/c.mk
 
 # generate object rule for each $(BIN)
 $(eval $(foreach b,$(BIN), \
