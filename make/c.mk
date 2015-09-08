@@ -28,27 +28,6 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-# rules to compile c files under dir $2 for utility $1
-# $(eval $(call rule-compile-dir-c,utility_name,dir)
-define rule-compile-dir-c
-
-# create necessary dir
-$(shell $(MKDIR) $(OBJDIR)/$2)
-$(shell $(MKDIR) $(DEPDIR)/$2)
-
-$(eval t:=$(wildcard $2/*.c))
-$1_OBJ+=$(t:%.c=$(OBJDIR)/%.o)
-
-# grab dependency
--include $(DEPDIR)/$2/*.d
-
-$(OBJDIR)/%.o: %.c
-	$(quiet)$$(CC) -MM -MF $(DEPDIR)/$$*.d -MP -MT $$@ $$(cflags) $$(cppflags) $$<
-	$(quiet)$(call colors,$(WHITE),Compile file $$<)
-	$(quiet)$$(CC) $$(cflags) $$(cppflags) -c $$< -o $$@ > /dev/null
-
-endef
-
 # rules to compile c files for utility $1
 # $(eval $(call rule-compile-c,utility_name,list)
 define rule-compile-c

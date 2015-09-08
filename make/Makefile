@@ -47,8 +47,8 @@ include $(where)/c.mk
 
 # generate object rule for each $(BIN)
 $(eval $(foreach b,$(BIN), \
-            $(if $($(BIN)_DIR), $(foreach d,$($(BIN)_DIR), $(call rule-compile-dir-c,$b,$d))) \
-            $(if $($(BIN)_SRC), $(foreach f,$($(BIN)_SRC), $(call rule-compile-c,$b,$f))) \
+            $(if $($(BIN)_SRC),$(eval $(call find-src,$b,.c))    \
+                               $(foreach f,$($(BIN)_SRC), $(call rule-compile-c,$b,$f))) \
         ) \
 )
 
