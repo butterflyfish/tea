@@ -21,7 +21,7 @@
   the cc command line.
 */
 #ifndef HAVE_UCHAR
-typedef unsigned char UCHAR;
+typedef char UCHAR;
 #endif /* HAVE_UCHARE */
 #ifndef HAVE_ULONG
 typedef unsigned long ULONG;
