@@ -48,6 +48,7 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE.
 */
+#include <sys/stat.h>
 #include "cdefs.h"			/* C language defs for all modules */
 #include "debug.h"			/* Debugging */
 #include "kermit.h"			/* Kermit protocol definitions */
@@ -109,6 +110,7 @@ kermit(short f,				/* Function code */
     unsigned int crc;                   /* 16-bit CRC */
 #endif /* F_CRC */
     int ok;
+    struct stat statbuf;
 
     debug(DB_MSG,"----------",0,0);	/* Marks each entry */
     debug(DB_LOG,"f",0,f);
@@ -539,6 +541,12 @@ kermit(short f,				/* Function code */
 	    if ((rc = (k->openf)(k,k->filename,1)) != X_OK) /* Try to open */
 	      return(rc);
 	    encstr(k->filename,k,r);	/* Encode the name for transmission */
+
+	    rc = stat(k->filename, &statbuf);
+	    if(rc)
+	      return rc;
+	    r->filesize=statbuf.st_size;
+
 	    if ((rc = spkt('F',k->s_seq,-1,k->xdata,k)) != X_OK)
 	      return(rc);		/* Send F packet */
 	    r->sofar = 0L;
