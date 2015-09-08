@@ -42,3 +42,12 @@ define colors
 	printf "$1$2$(END)\n"
 endef
 
+
+# find src files with extension ext under name_SRC
+# name_SRC can contain file list and dir list
+# $(eval $(call find-src,name,ext)
+define find-src
+$(eval dir:=$(filter-out %$2,$($1_SRC)))
+$1_SRC:=$(filter %$2,$($1_SRC))
+$1_SRC+=$(foreach d,$(dir),$(wildcard $d/*$2))
+endef
