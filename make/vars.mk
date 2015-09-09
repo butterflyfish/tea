@@ -35,3 +35,15 @@ DEPDIR := build/dep
 BINDIR := build/bin
 
 MKDIR := mkdir -p
+
+
+# color definition for printf
+color_red := \e[1;31m
+color_grn := \e[1;32m
+color_yel := \e[1;33m
+color_blu := \e[1;34m
+color_mag := \e[1;35m
+color_cyn := \e[1;36m
+color_err := \e[0;37m
+color_end := \e[0m
+

@@ -41,7 +41,7 @@ $(if $(findstring ./,$(dir $2)),, \
 
 $(OBJDIR)/$(basename $2).o: $2
 	$(quiet)$$(CC) -MM -MF $(DEPDIR)/$(basename $2).d -MP -MT $$@ $$(cflags) $$(cppflags) $$<
-	$(quiet)$(call colors,$(WHITE),Compile file $$<)
+	$(quiet)printf "Compile file $(color_grn)$$<$(color_end)\n"
 	$(quiet)$$(CC) $$(cflags) $$(cppflags) -c $$< -o $$@ > /dev/null
 
 $1_OBJ+=$(OBJDIR)/$(basename $2).o
@@ -55,5 +55,5 @@ $1: $($1_OBJ)
 	$(quiet)$$(CC) $$^ $$(LDFLAGS) -o $$@
 	$(quiet)$(MKDIR) $(BINDIR)
 	$(quiet)mv $$@ $(BINDIR)
-	$(quiet)echo $$@ is produced under $(BINDIR)
+	$(quiet)printf "$(color_blu)$$@$(color_end) is produced under $(BINDIR)\n"
 endef

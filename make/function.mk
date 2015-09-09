@@ -27,21 +27,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-DEF     := \033[0;38m
-RED     := \033[1;31m
-GREEN   := \033[1;32m
-YELLOW  := \033[1;33m
-BLUE    := \033[1;34m
-PURPLE  := \033[1;35m
-CYAN    := \033[1;36m
-WHITE   := \033[1;37m
-END     := \033[0m
-ERR     := \033[0;37m
-
-define colors
-	printf "$1$2$(END)\n"
-endef
-
 
 # find src files with extension ext under name_SRC
 # name_SRC can contain file list and dir list
