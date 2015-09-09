@@ -47,6 +47,9 @@ cmd_quit(int argc, char **argv);
 static int
 cmd_help(int argc, char **argv);
 
+static int
+cmd_kermit_send(int argc, char **argv);
+
 struct command {
 
      const char *name;
@@ -55,9 +58,10 @@ struct command {
 
 } cmdtbl [] = {
 
-    { "quit", cmd_quit, "Exit Tea!" },
-    { "help", cmd_help, NULL },
-    { NULL, NULL, NULL }
+    {"quit",    cmd_quit,   "Exit Tea!"},
+    {"help",    cmd_help,   NULL},
+    {"ks",      cmd_kermit_send, "ks <file>"},
+    {NULL, NULL, NULL}
 };
 
 
@@ -81,6 +85,19 @@ cmd_help(int argc, char **argv){
 
     return 0;
 }
+
+static int
+cmd_kermit_send(int argc, char **argv){
+
+    if ( argc != 2 )
+        return -1;
+
+    if ( kermit_send_file(serial_fd, &argv[1]) )
+        fprintf(stderr, "send file failed!\n");
+
+    return 0;
+}
+
 
 static void
 cli_exec(char *buf) {
