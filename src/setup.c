@@ -35,12 +35,87 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include "ek_file.h"
 
 static struct termios origin;
+static int serial_fd = -1;
 
-#define USAGE \
-    "quit:    -- exit program\n" \
-    "Enter:   -- jump back\n"
+static int
+cmd_quit(int argc, char **argv);
+
+static int
+cmd_help(int argc, char **argv);
+
+struct command {
+
+     const char *name;
+     int (*func)(int argc, char **argv);
+     const char *usage;
+
+} cmdtbl [] = {
+
+    { "quit", cmd_quit, "Exit Tea!" },
+    { "help", cmd_help, NULL },
+    { NULL, NULL, NULL }
+};
+
+
+static int
+cmd_quit(int argc, char **argv){
+
+    exit(0);
+}
+
+static int
+cmd_help(int argc, char **argv){
+
+    struct command *cmd;
+    int i=0;
+
+    for(cmd = &cmdtbl[0]; cmd->name; cmd = &cmdtbl[++i]) {
+
+        if (cmd->usage)
+            fprintf(stderr, "%s --- %s\n", cmd->name, cmd->usage);
+    }
+
+    return 0;
+}
+
+static void
+cli_exec(char *buf) {
+
+    #define MAX_ARGC 5
+    char *argv[MAX_ARGC] = {0};
+    char *sep = " \t\n";
+    char *token;
+    int argc=0;
+    struct command *cmd;
+    int i=0;
+    int ret;
+
+    token = strtok(buf, sep);
+    while( (token != NULL) && (argc <= MAX_ARGC) )  {
+
+        argv[argc] = token;
+        /* printf("argv[%d] is %s\n", argc, argv[argc]); */
+        argc++;
+
+        token= strtok(NULL,sep);
+    }
+
+    for(cmd = &cmdtbl[0]; cmd->name; cmd = &cmdtbl[i++]) {
+
+        if ( 0 == strcmp(cmd->name, argv[0]) ) {
+            ret = cmd->func(argc, argv);
+            if ( ret < 0 && cmd->usage)
+                fprintf(stderr, "usage is: %s\n", cmd->usage);
+
+            return;
+        }
+    }
+    fprintf(stderr, "Unknow command %s!\n", argv[0]);
+}
+
 /*
  * raw mode;
  * input is not assembled into lines and special characters are not processed
@@ -99,24 +174,30 @@ void
 setup_loop(int ifd, int ofd, int ser_fd)
 {
     char buf[1024];
+    int len;
 
+    serial_fd = ser_fd;
     disable_raw_mode(ifd);
 
     write(ofd, "\n", sizeof "\n");
+
+    /* green color */
+    fprintf(stderr, "\n\033[1;32mPress Enter to resume the connection,type help get command list.\033[0m\n");
+
     while(1)
     {
         write(ofd, "Tea> ", sizeof "Tea> ");
 
-        read(ifd, buf, sizeof buf);
+        len = read(ifd, buf, sizeof buf);
+        buf[len] = 0;
 
         /* to jump out setup */
-        if ( buf[0] == '\n' )
+        if ( buf[0] == '\n' ) {
+            write(ser_fd, buf, 1);
             break;
+        }
 
-        if ( !strncmp(buf, "quit", 4) )
-            exit(0);
-
-        write(ofd, USAGE, sizeof USAGE);
+        cli_exec(buf);
     }
 
     enable_raw_mode(ifd);
