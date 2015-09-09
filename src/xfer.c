@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fcntl.h>
 #include <ev.h>
 #include "xfer.h"
-#include "setup.h"
+#include "cli.h"
 
 struct emulator {
 
@@ -99,7 +99,7 @@ tty_read (EV_P_ struct ev_io *w, int revents)
 
         fcntl(em->ifd, F_SETFL, fcntl(em->ifd, F_GETFL, 0) & ~O_NONBLOCK);
 
-        setup_loop(em->ifd, em->ofd, em->ser_fd);
+        cli_loop(em->ifd, em->ofd, em->ser_fd);
 
         fcntl(em->ifd, F_SETFL, fcntl(em->ifd, F_GETFL, 0) | O_NONBLOCK);
 

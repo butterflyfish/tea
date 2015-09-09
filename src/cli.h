@@ -1,4 +1,4 @@
-/* setup.h: control terminal
+/* cli.h: command line interface of Tea
 opyright © 2015 Michael Zhu <boot2linux@gmail.com>
 All rights reserved.
 
@@ -28,8 +28,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _SETUP_H
-#define _SETUP_H
+#ifndef _CLI_H
+#define _CLI_H
 
 /*
  * enable raw mode for controlling tty @ifd
@@ -51,7 +51,7 @@ disable_raw_mode(int ifd);
  *
  */
 void
-setup_loop(int ifd, int ofd, int ser_fd);
+cli_loop(int ifd, int ofd, int ser_fd);
 
 
 #endif

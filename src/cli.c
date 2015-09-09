@@ -1,4 +1,5 @@
-/* setup.c: control terminal
+/* cli.c: command line interface of Tea
+
 opyright © 2015 Michael Zhu <boot2linux@gmail.com>
 All rights reserved.
 
@@ -29,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <termios.h>
-#include "setup.h"
+#include "cli.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -171,7 +172,7 @@ disable_raw_mode(int ifd)
  * interactive shell
  */
 void
-setup_loop(int ifd, int ofd, int ser_fd)
+cli_loop(int ifd, int ofd, int ser_fd)
 {
     char buf[1024];
     int len;
