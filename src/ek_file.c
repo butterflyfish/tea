@@ -317,8 +317,13 @@ kermit_send_file(int ofd, char ** filelist) {
     short r_slot;
 
     int len = 0;
+    int ret = -1;
+    int flags;
 
     ttyfd = ofd;
+    flags = fcntl(ttyfd, F_GETFL, 0);
+    fcntl(ttyfd, F_SETFL, flags & ~O_NONBLOCK);
+
     status = X_OK;                      /* Initial kermit status */
 
 
@@ -356,7 +361,7 @@ kermit_send_file(int ofd, char ** filelist) {
     /* Initialize Kermit protocol */
     status = kermit(K_INIT, &k, 0, 0, "", &r);
     if (status == X_ERROR)
-        return -1;
+        goto end;
     status = kermit(K_SEND, &k, 0, 0, "", &r);
     while (status != X_DONE) {
 
@@ -370,7 +375,7 @@ kermit_send_file(int ofd, char ** filelist) {
         if (rx_len < 1) {               /* No data was read */
             freerslot(&k,r_slot);    /* So free the window slot */
             if (rx_len < 0)             /* If there was a fatal error */
-                return -1;
+                goto end;
         }
         switch (status = kermit(K_RUN, &k, r_slot, rx_len, "", &r)) {
             case X_OK:
@@ -392,8 +397,13 @@ kermit_send_file(int ofd, char ** filelist) {
                 putchar('\n');
                 break;    /* Finished */
             case X_ERROR:
-                return -1;
+                goto end;
         }
     }
-    return 0;
+
+    ret = 0;
+
+end:
+    fcntl(ttyfd, F_SETFL, flags);
+    return ret;
 }
