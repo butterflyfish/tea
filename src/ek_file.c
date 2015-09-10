@@ -320,6 +320,15 @@ kermit_send_file(int ofd, char ** filelist) {
     int ret = -1;
     int flags;
 
+    int i;
+
+    for (i = 0; filelist[i]; ++i) {
+        if (access(filelist[i], R_OK)) {
+            fprintf(stderr, "Can not access file %s\n", filelist[i]);
+            return 0;
+        }
+    }
+
     ttyfd = ofd;
     flags = fcntl(ttyfd, F_GETFL, 0);
     fcntl(ttyfd, F_SETFL, flags & ~O_NONBLOCK);
@@ -386,7 +395,7 @@ kermit_send_file(int ofd, char ** filelist) {
                 */
                 if(0 == r.sofar)
                     printf("Sending file %s .... %%",r.filename);
-                for(int i=0;i<len;i++)
+                for(i=0;i<len;i++)
                     putchar('\b');
                 len=printf("%d",(int)(r.sofar*100/r.filesize));
                 fflush(stdout);
