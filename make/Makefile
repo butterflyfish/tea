@@ -47,6 +47,10 @@ include $(where)/vars.mk
 include $(where)/function.mk
 include $(where)/c.mk
 
+# include additional platform specific stuff
+-include $(where)/$(PLAT_KERNEL).mk
+-include $(where)/$(PLAT_KERNEL)_$(PLAT_ARCH).mk
+
 # TODO:
 # support multiple extension, e.g. .c .s
 # generate rules based on extension

@@ -30,6 +30,9 @@
 # default value
 quiet ?= @
 
+PLAT_ARCH   := $(shell uname -m)
+PLAT_KERNEL := $(shell uname -s)
+
 BUILDIR ?= build
 OBJDIR := $(BUILDIR)/obj
 DEPDIR := $(BUILDIR)/dep
