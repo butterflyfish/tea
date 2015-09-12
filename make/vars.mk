@@ -36,6 +36,9 @@ DEPDIR := $(BUILDIR)/dep
 BINDIR := $(BUILDIR)/bin
 LIBDIR := $(BUILDIR)/lib
 
+# JSON Compilation Database
+CCDB := compile_commands.json
+
 MKDIR := mkdir -p
 RM := rm -rf
 

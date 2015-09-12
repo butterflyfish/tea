@@ -43,6 +43,7 @@ $(OBJDIR)/$(basename $2).o: $2
 	$(quiet)printf "Compile file $(color_grn)$$<$(color_end)\n"
 	$(quiet)$$(CC) -MM -MF $(DEPDIR)/$(basename $2).d -MP -MT $$@ $$(cflags) $$(cppflags) $$<
 	$(quiet)$$(CC) $$(cflags) $$(cppflags) -c $$< -o $$@ > /dev/null
+	$(quiet)$(call export_compile_command,$$(CC) $$(cflags) $$(cppflags) -c $$< -o $$@,$2)
 
 $1_OBJ+=$(OBJDIR)/$(basename $2).o
 

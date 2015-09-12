@@ -30,6 +30,7 @@
 -include Config.mk config.mk
 
 .PHONY: $(LIBAR) $(BIN)
+
 all: $(LIBAR) $(BIN)
 
 # find Where Makefile is
@@ -84,5 +85,14 @@ $(eval $(foreach a, $(LIBAR), $(call rule-libar,$a)))
 
 endif
 
+# generate JSON Compilation Database after target all
+.PHONY: $(CCDB)
+all: |$(CCDB)
+
+# generate JSON Compilation Database
+$(CCDB):
+	$(quiet)$(call generate-cc-db)
+
 clean:
-	@$(RM) $(BUILDIR)
+	$(quiet)$(RM) $(BUILDIR)
+	$(quiet)$(RM) $(CCDB)
