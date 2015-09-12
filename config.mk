@@ -28,7 +28,12 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 BIN := tea
-tea_SRC = src deps/ek/kermit.c
+
+tea_SRC   = src
+tea_LIBAR = kermit
+
+LIBAR := kermit
+kermit_SRC := deps/ek/kermit.c
 
 LDFLAGS += -lev
 
