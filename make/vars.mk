@@ -33,9 +33,13 @@ quiet ?= @
 OBJDIR := build/obj
 DEPDIR := build/dep
 BINDIR := build/bin
+LIBDIR := build/lib
 
 MKDIR := mkdir -p
 
+# arflags: flags for utility ar
+arflags += -rc
+RANLIB ?= ranlib
 
 # color definition for printf
 color_red := \e[1;31m

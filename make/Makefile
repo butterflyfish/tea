@@ -29,9 +29,8 @@
 
 -include Config.mk config.mk
 
-.PHONY: all
-all: $(BIN)
-
+.PHONY: $(LIBAR) $(BIN)
+all: $(LIBAR) $(BIN)
 
 # find Where Makefile is
 where=$(dir $(shell readlink Makefile))
@@ -39,6 +38,7 @@ where=$(dir $(shell readlink Makefile))
 # Redefine flags to avoid conflict with user's local definitions
 cppflags := $(CPPFLAGS)
 cflags   := $(CFLAGS)
+arflags  := $(ARFLAGS)
 
 # load library
 include $(where)/vars.mk
@@ -53,7 +53,20 @@ $(eval $(foreach b,$(BIN), \
 )
 
 # generate target rule for each $(BIN)
-$(if $(BIN), $(foreach b, $(BIN), $(eval $(call rule-produce-bin,$b))))
+$(if $(BIN),$(foreach b, $(BIN), $(eval $(call rule-produce-bin,$b)) \
+                                 $(if $($b_LIBAR),$(eval $b: |$($b_LIBAR))) \
+            ) \
+)
+
+# generate object rule for each $(LIBAR)
+$(eval $(foreach b,$(LIBAR), \
+            $(if $($(LIBAR)_SRC),$(eval $(call find-src,$b,.c))    \
+                               $(foreach f,$($(LIBAR)_SRC), $(call rule-compile-c,$b,$f))) \
+        ) \
+)
+
+# generate rule for each $(LIBAR)
+$(if $(LIBAR), $(foreach a,$(LIBAR), $(eval $(call rule-libar,$a))))
 
 clean:
 	@find $(DEPDIR) -type f | xargs rm -f

@@ -28,8 +28,8 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-# rules to compile c files for utility $1
-# $(eval $(call rule-compile-c,utility_name,list)
+# rules to compile c files for owner $1
+# $(eval $(call rule-compile-c,owner,list)
 define rule-compile-c
 
 # create necessary dir
@@ -40,19 +40,30 @@ $(if $(findstring ./,$(dir $2)),, \
 -include $(DEPDIR)/$(basename $2).d
 
 $(OBJDIR)/$(basename $2).o: $2
-	$(quiet)$$(CC) -MM -MF $(DEPDIR)/$(basename $2).d -MP -MT $$@ $$(cflags) $$(cppflags) $$<
 	$(quiet)printf "Compile file $(color_grn)$$<$(color_end)\n"
+	$(quiet)$$(CC) -MM -MF $(DEPDIR)/$(basename $2).d -MP -MT $$@ $$(cflags) $$(cppflags) $$<
 	$(quiet)$$(CC) $$(cflags) $$(cppflags) -c $$< -o $$@ > /dev/null
 
 $1_OBJ+=$(OBJDIR)/$(basename $2).o
 
 endef
 
+# rules to produce archive
+# object rules should use function rule-compile-c
+# $(eval $(call rule rule-libar,ar_name))
+define rule-libar
+$1: $($1_OBJ)
+	$(quiet)$(MKDIR) $(LIBDIR)
+	$(quiet)$$(AR) $$(arflags) $(LIBDIR)/lib$$@.a $$< >/dev/null
+	$(quiet)$$(RANLIB) $(LIBDIR)/lib$$@.a  >/dev/null
+	$(quiet)printf "Create archive $(color_grn)$(LIBDIR)/lib$$@.a$(color_end)\n"
+endef
+
 # rules to produce final utility $1
 # $(eval $(call rule-produce-bin))
 define rule-produce-bin
 $1: $($1_OBJ)
-	$(quiet)$$(CC) $$^ $$(LDFLAGS) -o $$@
+	$(quiet)$$(CC) $$^  $(foreach a,$($1_LIBAR),$(LIBDIR)/lib$a.a) $$(LDFLAGS) -o $$@
 	$(quiet)$(MKDIR) $(BINDIR)
 	$(quiet)mv $$@ $(BINDIR)
 	$(quiet)printf "$(color_blu)$$@$(color_end) is produced under $(BINDIR)\n"
