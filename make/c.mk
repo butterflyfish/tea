@@ -63,7 +63,7 @@ endef
 # $(eval $(call rule-produce-bin))
 define rule-produce-bin
 $1: $($1_OBJ)
-	$(quiet)$$(CC) $$^  $(foreach a,$($1_LIBAR),$(LIBDIR)/lib$a.a) $$(LDFLAGS) -o $$@
+	$(quiet)$$(CC) $$^  $(foreach a,$($1_LIBAR),$(LIBDIR)/lib$a.a) $$(ldflags) -o $$@
 	$(quiet)$(MKDIR) $(BINDIR)
 	$(quiet)mv $$@ $(BINDIR)
 	$(quiet)printf "$(color_blu)$$@$(color_end) is produced under $(BINDIR)\n"

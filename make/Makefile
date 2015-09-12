@@ -39,6 +39,7 @@ where=$(dir $(shell readlink Makefile))
 cppflags := $(CPPFLAGS)
 cflags   := $(CFLAGS)
 arflags  := $(ARFLAGS)
+ldflags  := $(LDFLAGS)
 
 # load library
 include $(where)/vars.mk
