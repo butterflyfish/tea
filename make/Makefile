@@ -86,12 +86,14 @@ $(eval $(foreach a, $(LIBAR), $(call rule-libar,$a)))
 endif
 
 # generate JSON Compilation Database after target all
+ifneq ($(export_compile_command),)
 .PHONY: $(CCDB)
 all: |$(CCDB)
 
 # generate JSON Compilation Database
 $(CCDB):
 	$(quiet)$(call generate-cc-db)
+endif
 
 clean:
 	$(quiet)$(RM) $(BUILDIR)

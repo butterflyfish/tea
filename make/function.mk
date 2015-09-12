@@ -40,13 +40,17 @@ endef
 # export compile command
 # please refer to http://clang.llvm.org/docs/JSONCompilationDatabase.html
 # $(call export_compile_command,how_to_cc,src)
-define export_compile_command
+export_compile_command = \
 echo "    {"  >> $(OBJDIR)/$(basename $2).json;  \
 echo "        \"command\": \"$1\"," >> $(OBJDIR)/$(basename $2).json;  \
 echo "        \"directory\": \"$(PWD)\"," >> $(OBJDIR)/$(basename $2).json; \
 echo "        \"file\": \"$(PWD)/$2\"" >> $(OBJDIR)/$(basename $2).json;  \
-echo "    }," >> $(OBJDIR)/$(basename $2).json;
-endef
+echo "    }," >> $(OBJDIR)/$(basename $2).json
+
+# empty export_compile_command if CC is not clang
+ifneq ($(shell $(CC) 2>&1|grep -o clang),clang)
+export_compile_command =
+endif
 
 # generate JSON Compilation Database
 # please refer to http://clang.llvm.org/docs/JSONCompilationDatabase.html
