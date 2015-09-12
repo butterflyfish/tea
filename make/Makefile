@@ -46,28 +46,43 @@ include $(where)/vars.mk
 include $(where)/function.mk
 include $(where)/c.mk
 
-# generate object rule for each $(BIN)
-$(eval $(foreach b,$(BIN), \
-            $(if $($(BIN)_SRC),$(eval $(call find-src,$b,.c))    \
-                               $(foreach f,$($(BIN)_SRC), $(call rule-compile-c,$b,$f))) \
-        ) \
+# TODO:
+# support multiple extension, e.g. .c .s
+# generate rules based on extension
+SRCEXT:=.c
+
+# generate rules for each $(BIN)
+ifneq ($(BIN),)
+
+# find source list and then generate rule for each $(BIN)
+# append archive library as depency
+# |: it indicates $<,$^ etc don't contain dependency after !
+$(foreach b, $(BIN), \
+    $(if $($b_SRC), $(eval $(call find-src,$b,$(SRCEXT)))    \
+                    $(eval $(foreach f, $($b_SRC), \
+                                $(call rule-compile-c,$b,$f)))) \
+    $(if $($b_LIBAR), $(eval $b: |$($b_LIBAR))) \
 )
 
-# generate target rule for each $(BIN)
-$(if $(BIN),$(foreach b, $(BIN), $(eval $(call rule-produce-bin,$b)) \
-                                 $(if $($b_LIBAR),$(eval $b: |$($b_LIBAR))) \
-            ) \
+# must foreach again to ensure its dependency object list is ready
+$(eval $(foreach b, $(BIN), $(call rule-produce-bin,$b)))
+
+endif
+
+# generate rules for each $(LIBAR)
+ifneq ($(LIBAR),)
+
+# find source list and then generate rule for each archive
+$(foreach a, $(LIBAR), \
+    $(if $($a_SRC), $(eval $(call find-src,$a,$(SRCEXT))) \
+                    $(eval $(foreach f, $($a_SRC), \
+                                $(call rule-compile-c,$a,$f)))) \
 )
 
-# generate object rule for each $(LIBAR)
-$(eval $(foreach b,$(LIBAR), \
-            $(if $($(LIBAR)_SRC),$(eval $(call find-src,$b,.c))    \
-                               $(foreach f,$($(LIBAR)_SRC), $(call rule-compile-c,$b,$f))) \
-        ) \
-)
+# must foreach again to ensure its dependency object list is ready
+$(eval $(foreach a, $(LIBAR), $(call rule-libar,$a)))
 
-# generate rule for each $(LIBAR)
-$(if $(LIBAR), $(foreach a,$(LIBAR), $(eval $(call rule-libar,$a))))
+endif
 
 clean:
 	@find $(DEPDIR) -type f | xargs rm -f
