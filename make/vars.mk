@@ -30,12 +30,14 @@
 # default value
 quiet ?= @
 
-OBJDIR := build/obj
-DEPDIR := build/dep
-BINDIR := build/bin
-LIBDIR := build/lib
+BUILDIR ?= build
+OBJDIR := $(BUILDIR)/obj
+DEPDIR := $(BUILDIR)/dep
+BINDIR := $(BUILDIR)/bin
+LIBDIR := $(BUILDIR)/lib
 
 MKDIR := mkdir -p
+RM := rm -rf
 
 # arflags: flags for utility ar
 arflags += -rc

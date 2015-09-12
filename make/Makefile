@@ -85,6 +85,4 @@ $(eval $(foreach a, $(LIBAR), $(call rule-libar,$a)))
 endif
 
 clean:
-	@find $(DEPDIR) -type f | xargs rm -f
-	@find $(OBJDIR) -type f | xargs rm -f
-	@find $(BINDIR) -type f | xargs rm -f
+	@$(RM) $(BUILDIR)
