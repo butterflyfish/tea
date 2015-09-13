@@ -48,7 +48,7 @@ include $(where)/c.mk
 # TODO:
 # support multiple extension, e.g. .c .s
 # generate rules based on extension
-SRCEXT:=.c
+SRCEXT ?= .c
 
 # generate rules for each $(BIN)
 ifneq ($(BIN),)
