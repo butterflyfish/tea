@@ -33,6 +33,7 @@ quiet ?= @
 PLAT_ARCH   := $(shell uname -m)
 PLAT_KERNEL := $(shell uname -s)
 
+# build directory
 BUILDIR ?= build
 OBJDIR := $(BUILDIR)/obj
 DEPDIR := $(BUILDIR)/dep
@@ -42,14 +43,28 @@ LIBDIR := $(BUILDIR)/lib
 # JSON Compilation Database
 CCDB := $(BUILDIR)/compile_commands.json
 
-MKDIR := mkdir -p
-RM := rm -rf
 
-# arflags: flags for utility ar
-arflags = rc
-RANLIB ?= ranlib
+# utility variables
+RM     := rm -rf
+MKDIR  := mkdir -p
+RANLIB := ranlib
 
-# color definition for printf
+
+# Redefine flags to avoid conflict with user's local definitions
+# CFLAGS      C compiler flags
+# LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
+#             nonstandard directory <lib dir>
+# CPPFLAGS    (Objective) C/C++ preprocessor flags, e.g. -I<include dir> if
+#             you have headers in a nonstandard directory <include dir>
+# CPP         C preprocessor
+# arflags:    utility ar
+cppflags := $(CPPFLAGS)
+cflags   := $(CFLAGS)
+ldflags  := $(LDFLAGS)
+arflags  := rc
+
+
+# color definition used by printf etc
 color_red := \e[1;31m
 color_grn := \e[1;32m
 color_yel := \e[1;33m

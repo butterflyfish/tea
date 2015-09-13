@@ -36,11 +36,6 @@ all: $(LIBAR) $(BIN)
 # find Where Makefile is
 where=$(dir $(shell readlink Makefile))
 
-# Redefine flags to avoid conflict with user's local definitions
-cppflags := $(CPPFLAGS)
-cflags   := $(CFLAGS)
-ldflags  := $(LDFLAGS)
-
 # load library
 include $(where)/vars.mk
 include $(where)/function.mk
