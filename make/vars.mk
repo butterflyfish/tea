@@ -46,7 +46,7 @@ MKDIR := mkdir -p
 RM := rm -rf
 
 # arflags: flags for utility ar
-arflags += -rc
+arflags = rc
 RANLIB ?= ranlib
 
 # color definition for printf

@@ -39,7 +39,6 @@ where=$(dir $(shell readlink Makefile))
 # Redefine flags to avoid conflict with user's local definitions
 cppflags := $(CPPFLAGS)
 cflags   := $(CFLAGS)
-arflags  := $(ARFLAGS)
 ldflags  := $(LDFLAGS)
 
 # load library
