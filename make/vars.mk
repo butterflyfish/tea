@@ -40,7 +40,7 @@ BINDIR := $(BUILDIR)/bin
 LIBDIR := $(BUILDIR)/lib
 
 # JSON Compilation Database
-CCDB := compile_commands.json
+CCDB := $(BUILDIR)/compile_commands.json
 
 MKDIR := mkdir -p
 RM := rm -rf
