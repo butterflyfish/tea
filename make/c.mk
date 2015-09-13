@@ -29,7 +29,7 @@
 
 
 # rules to compile c files for owner $1
-# $(eval $(call rule-compile-c,owner,list)
+# $(eval $(call rule-compile-c,owner,list,flags)
 define rule-compile-c
 
 # create necessary dir
@@ -41,9 +41,9 @@ $(if $(findstring ./,$(dir $2)),, \
 
 $(OBJDIR)/$(basename $2).o: $2
 	$(quiet)printf "Compile file $(color_grn)$$<$(color_end)\n"
-	$(quiet)$$(CC) -MM -MF $(DEPDIR)/$(basename $2).d -MP -MT $$@ $$(cflags) $$(cppflags) $$<
-	$(quiet)$$(CC) $$(cflags) $$(cppflags) -c $$< -o $$@ > /dev/null
-	$(quiet)$(call export_compile_command,$$(CC) $$(cflags) $$(cppflags) -c $$< -o $$@,$2)
+	$(quiet)$$(CC) -MM -MF $(DEPDIR)/$(basename $2).d -MP -MT $$@ $$(cflags) $$(cppflags) $3 $$<
+	$(quiet)$$(CC) $$(cflags) $$(cppflags) $3 -c $$< -o $$@ > /dev/null
+	$(quiet)$(call export_compile_command,$$(CC) $$(cflags) $$(cppflags) $3 -c $$< -o $$@,$2)
 
 $1_OBJ+=$(OBJDIR)/$(basename $2).o
 
@@ -61,10 +61,10 @@ $1: $($1_OBJ)
 endef
 
 # rules to produce final utility $1
-# $(eval $(call rule-produce-bin))
+# $(eval $(call rule-produce-bin,name,flags))
 define rule-produce-bin
 $1: $($1_OBJ)
-	$(quiet)$$(CC) $$^  $(foreach a,$($1_LIBAR),$(LIBDIR)/lib$a.a) $$(ldflags) -o $$@
+	$(quiet)$$(CC) $$^  $(foreach a,$($1_LIBAR),$(LIBDIR)/lib$a.a) $$(ldflags) $2 -o $$@
 	$(quiet)$(MKDIR) $(BINDIR)
 	$(quiet)mv $$@ $(BINDIR)
 	$(quiet)printf "$(color_blu)$$@$(color_end) is produced under $(BINDIR)\n"

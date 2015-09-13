@@ -62,14 +62,15 @@ ifneq ($(BIN),)
 # append archive library as depency
 # |: it indicates $<,$^ etc don't contain dependency after !
 $(foreach b, $(BIN), \
+    $(eval T:=$($b_CPPFLAGS) $($b_CFLAGS)) \
     $(if $($b_SRC), $(eval $(call find-src,$b,$(SRCEXT)))    \
                     $(eval $(foreach f, $($b_SRC), \
-                                $(call rule-compile-c,$b,$f)))) \
+                                $(call rule-compile-c,$b,$f,$T)))) \
     $(if $($b_LIBAR), $(eval $b: |$($b_LIBAR))) \
 )
 
 # must foreach again to ensure its dependency object list is ready
-$(eval $(foreach b, $(BIN), $(call rule-produce-bin,$b)))
+$(eval $(foreach b, $(BIN), $(call rule-produce-bin,$b,$($b_LDFLAGS))))
 
 endif
 
@@ -78,9 +79,10 @@ ifneq ($(LIBAR),)
 
 # find source list and then generate rule for each archive
 $(foreach a, $(LIBAR), \
+    $(eval T:=$($a_CPPFLAGS) $($a_CFLAGS)) \
     $(if $($a_SRC), $(eval $(call find-src,$a,$(SRCEXT))) \
                     $(eval $(foreach f, $($a_SRC), \
-                                $(call rule-compile-c,$a,$f)))) \
+                                $(call rule-compile-c,$a,$f,$T)))) \
 )
 
 # must foreach again to ensure its dependency object list is ready

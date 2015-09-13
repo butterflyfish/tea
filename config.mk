@@ -29,17 +29,17 @@
 
 BIN := tea
 
-tea_SRC   = src
-tea_LIBAR = kermit
+tea_SRC   := src
+tea_LIBAR := kermit
+tea_LDFLAGS := -lev
 
 LIBAR := kermit
 kermit_SRC := deps/ek/kermit.c
 
-LDFLAGS += -lev
 
 #CFLAGS = -Wall -Werror -O3
-CFLAGS =  -O3
+CFLAGS :=  -O3
 
 # for deps/ek/kermit.c
-CPPFLAGS = -DNODEBUG
+CPPFLAGS := -DNODEBUG
 CFLAGS += -I deps/ek
