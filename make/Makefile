@@ -95,5 +95,17 @@ $(CCDB):
 	$(quiet)$(call generate-cc-db)
 endif
 
+ifneq ($(INSTALLDIRS),)
+.PHONY:  user_install
+install: user_install
+	$(quiet)$(MKDIR) $(PREFIX)
+	$(quiet)cd $(BUILDIR); \
+	for f in `find $(INSTALLDIRS) -type f`; \
+	do \
+	tar cf - $$f | tar -C $(PREFIX) -xf -; \
+	echo Installed file $$f to $(PREFIX); \
+	done
+endif
+
 clean:
 	$(quiet)$(RM) $(BUILDIR)

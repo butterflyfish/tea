@@ -40,6 +40,28 @@ DEPDIR := $(BUILDIR)/dep
 BINDIR := $(BUILDIR)/bin
 LIBDIR := $(BUILDIR)/lib
 
+# Installation directories:
+# By default, 'make install' will install all the files to
+# '/usr/local/bin', '/usr/local/lib' etc.  You can specify
+# an installation prefix by assigning PREFIX
+PREFIX ?= /usr/local
+bindir      := bin
+sbindir     := sbin
+libexecdir  := libexec
+libdir      := lib
+includedir  := include
+sysconfdir  := etc
+datadir     := share
+infodir     := $(datadir)/info
+localedir   := $(datadir)/lib
+mandir      := $(datadir)/man
+INSTALLDIRS := $(bindir) $(sbindir) $(libexecdir) $(libdir) $(includedir) \
+               $(sysconfdir) $(datadir)
+
+# existed directory list
+INSTALLDIRS := $(patsubst $(BUILDIR)/%,%,$(wildcard $(BUILDIR)/$(INSTALLDIRS)))
+
+
 # JSON Compilation Database
 CCDB := $(BUILDIR)/compile_commands.json
 
