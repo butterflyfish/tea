@@ -1,10 +1,6 @@
 # TODO
 
-* interactive commands
-    * output to stderr
-    * add engine
-    * add more commands
-* file transfer: kermit, ymodem, etc
+* send file: ymodem, etc
 * support alias
 * allow to config via command and configration file. Setting list:
     * baudrate

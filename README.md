@@ -1,15 +1,13 @@
 # Tea
-Tea is a serial emulator designed for embedded system development.
-It's a open source program licensed under four caluse BSD.
-
+[ Tea ]( https://github.com/boot2linux/tea ) - A simple terminal program for the serial port.
 
 ## Features
 
 * works on Linux and Mac OS X
 * open one idle seril port automatically
-* exit program if serial port is removed
+* exit automatically if serial ports opened are removed
 * control termial. Trigger key is Ctrl-]
-    * jump back after press Enter
+* send file via serial communication protocol: kermit
 
 ## How to build ?
 
@@ -22,3 +20,6 @@ cd tea
 make
 install -m 755 build/bin/tea /usr/local/bin
 ```
+
+## License
+licensed under four caluse BSD.
