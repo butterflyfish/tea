@@ -96,3 +96,11 @@ color_cyn := \e[1;36m
 color_err := \e[0;37m
 color_end := \e[0m
 
+
+# target to obtain value of variables
+# example usage: make v-cflags v-cppflags
+v-%:
+	@printf "\n$(color_grn)variable: $(color_red)$*$(color_end)\n"
+	@printf "value  = $(value  $*)\n"
+	@printf "origin = $(origin $*)\n"
+	@printf "flavor = $(flavor $*)\n"
