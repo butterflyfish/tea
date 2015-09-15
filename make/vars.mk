@@ -44,7 +44,9 @@ LIBDIR := $(BUILDIR)/lib
 # By default, 'make install' will install all the files to
 # '/usr/local/bin', '/usr/local/lib' etc.  You can specify
 # an installation prefix by assigning PREFIX
-PREFIX ?= /usr/local
+prefix ?= /usr/local
+PREFIX := $(abspath $(prefix))
+
 bindir      := bin
 sbindir     := sbin
 libexecdir  := libexec
