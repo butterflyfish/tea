@@ -61,15 +61,16 @@ struct command {
 
      const char *name;
      int (*func)(int argc, char **argv);
-     const char *usage;
+     const char *params;
+     const char *summary;
 
 } cmdtbl [] = {
 
-    {"quit",    cmd_quit,   "Exit Tea!"},
-    {"help",    cmd_help,   NULL},
-    {"ks",      cmd_kermit_send, "ks <file>"},
-	{"xs",      cmd_ymodem_send, "xs <file>\n Data size is 128B"},
-	{"ys",      cmd_ymodem_send, "ys <file>\n Data size is 1024B"},
+    {"quit",    cmd_quit, "",   "Exit Tea!"},
+    {"help",    cmd_help,   "",  "Display what you are seeing"},
+    {"ks",      cmd_kermit_send, "<file>", "Send file using Kermit"},
+    {"xs",      cmd_ymodem_send, "<file>", "Send file using Xmodem. Data size is 128B"},
+    {"ys",      cmd_ymodem_send, "<file>", "Send file using Ymodem. Data size is 1024B"},
     {NULL, NULL, NULL}
 };
 
@@ -88,8 +89,8 @@ cmd_help(int argc, char **argv){
 
     for(cmd = &cmdtbl[0]; cmd->name; cmd = &cmdtbl[++i]) {
 
-        if (cmd->usage)
-            fprintf(stderr, "%s --- %s\n", cmd->name, cmd->usage);
+        printf("\r\n  \x1b[1m%s\x1b[0m \x1b[90m%s\x1b[0m\r\n", cmd->name, cmd->params);
+        printf("  \x1b[33msummary:\x1b[0m %s\r\n", cmd->summary);
     }
 
     return 0;
@@ -154,8 +155,8 @@ cli_exec(char *buf) {
 
         if ( 0 == strcmp(cmd->name, argv[0]) ) {
             ret = cmd->func(argc, argv);
-            if ( ret < 0 && cmd->usage)
-                fprintf(stderr, "usage is: %s\n", cmd->usage);
+            if ( ret < 0 && cmd->params)
+                fprintf(stderr, "\x1b[33mSYNOPSIS:\x1b[0m %s %s\n", cmd->name, cmd->params);
 
             return;
         }
