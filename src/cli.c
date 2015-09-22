@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <ctype.h>
 #include "ek_file.h"
+#include "xymodem.h"
 
 static struct termios origin;
 static int serial_fd = -1;
@@ -50,6 +51,12 @@ cmd_help(int argc, char **argv);
 static int
 cmd_kermit_send(int argc, char **argv);
 
+static int
+cmd_xmodem_send(int argc, char **argv);
+
+static int
+cmd_ymodem_send(int argc, char **argv);
+
 struct command {
 
      const char *name;
@@ -61,6 +68,8 @@ struct command {
     {"quit",    cmd_quit,   "Exit Tea!"},
     {"help",    cmd_help,   NULL},
     {"ks",      cmd_kermit_send, "ks <file>"},
+	{"xs",      cmd_ymodem_send, "xs <file>\n Data size is 128B"},
+	{"ys",      cmd_ymodem_send, "ys <file>\n Data size is 1024B"},
     {NULL, NULL, NULL}
 };
 
@@ -93,6 +102,26 @@ cmd_kermit_send(int argc, char **argv){
         return -1;
 
     if ( kermit_send_file(serial_fd, &argv[1]) )
+        fprintf(stderr, "send file failed!\n");
+
+    return 0;
+}
+
+static int
+cmd_ymodem_send(int argc, char **argv){
+
+
+    if ( xymodem_send_file(1024, serial_fd, argv[1]) )
+        fprintf(stderr, "send file failed!\n");
+
+    return 0;
+}
+
+static int
+cmd_xmodem_send(int argc, char **argv){
+
+
+    if ( xymodem_send_file(128, serial_fd, argv[1]) )
         fprintf(stderr, "send file failed!\n");
 
     return 0;
