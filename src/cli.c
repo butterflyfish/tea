@@ -111,6 +111,8 @@ cmd_kermit_send(int argc, char **argv){
 static int
 cmd_ymodem_send(int argc, char **argv){
 
+    if ( argc != 2 )
+        return -1;
 
     if ( xymodem_send_file(1024, serial_fd, argv[1]) )
         fprintf(stderr, "send file failed!\n");
@@ -121,6 +123,8 @@ cmd_ymodem_send(int argc, char **argv){
 static int
 cmd_xmodem_send(int argc, char **argv){
 
+    if ( argc != 2 )
+        return -1;
 
     if ( xymodem_send_file(128, serial_fd, argv[1]) )
         fprintf(stderr, "send file failed!\n");
