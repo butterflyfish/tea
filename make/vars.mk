@@ -47,16 +47,16 @@ LIBDIR := $(BUILDIR)/lib
 prefix ?= /usr/local
 PREFIX := $(abspath $(prefix))
 
-bindir      := bin
-sbindir     := sbin
-libexecdir  := libexec
-libdir      := lib
-includedir  := include
-sysconfdir  := etc
-datadir     := share
-infodir     := $(datadir)/info
-localedir   := $(datadir)/lib
-mandir      := $(datadir)/man
+bindir      ?= bin
+sbindir     ?= sbin
+libexecdir  ?= libexec
+libdir      ?= lib
+includedir  ?= include
+sysconfdir  ?= etc
+datadir     ?= share
+infodir     ?= $(datadir)/info
+localedir   ?= $(datadir)/lib
+mandir      ?= $(datadir)/man
 INSTALLDIRS := $(bindir) $(sbindir) $(libexecdir) $(libdir) $(includedir) \
                $(sysconfdir) $(datadir)
 
