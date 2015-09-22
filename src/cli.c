@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "ek_file.h"
+#include "kermit_io.h"
 #include "xymodem.h"
 
 static struct termios origin;

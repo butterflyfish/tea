@@ -1,5 +1,5 @@
-#ifndef KERMIT_FILE_H
-#define KERMIT_FILE_H
+#ifndef KERMIT_IO_H
+#define KERMIT_IO_H
 
 /* send file via kermit protocol
  *

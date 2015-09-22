@@ -1,6 +1,6 @@
 /*
 
-kermit.c: send binary file based on e-kermit
+kermit_io.c: send binary file based on e-kermit
           some code is borrowed from deps/ek/unixio.c
 
 Copyright © 2015 Michael Zhu <boot2linux@gmail.com>
@@ -47,7 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "cdefs.h"  /* Data types for all modules */
 #include "kermit.h" /* Kermit symbols and data structures */
-#include "ek_file.h"
+#include "kermit_io.h"
 
 static struct k_data k;                        /* Kermit data structure */
 static struct k_response r;                    /* Kermit response structure */
