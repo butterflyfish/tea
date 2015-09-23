@@ -165,7 +165,7 @@ cli_exec(char *buf) {
             return;
         }
     }
-    fprintf(stderr, "Unknow command %s!\n", argv[0]);
+    fprintf(stderr, "Unknow command \x1b[33m%s\x1b[0m\n", argv[0]);
 }
 
 /*
