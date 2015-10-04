@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <sys/queue.h>
 #include <stddef.h>
 #include <fcntl.h>
 #include <ev.h>
@@ -50,12 +49,9 @@ struct terminal {
 
     ev_io ser_w;   /* serial port watcher */
     ev_io tty_w;   /* controling tty watcher */
-
-    SLIST_ENTRY(terminal) node;
 };
 
 
-static SLIST_HEAD(,terminal) tm_head;
 static struct ev_loop *loop;
 
 #define container_of(ptr, type, member) ({                      \
@@ -110,20 +106,6 @@ new_terminal(int ser_fd, int ifd, int ofd)
 {
     struct terminal *tm;
 
-    /* update serial port fd */
-    SLIST_FOREACH(tm, &tm_head, node) {
-
-        if (tm->ifd == ifd && tm->ofd == ofd) {
-
-            ev_io_stop(loop, &tm->ser_w);
-            tm->ser_fd =  ser_fd;
-
-            ev_io_init(&tm->ser_w, ser_read, ser_fd, EV_READ);
-            ev_io_start(loop, &tm->ser_w);
-            return 0;
-        }
-    }
-
     tm = malloc( sizeof *tm);
     tm->ser_fd = ser_fd;
     tm->ifd = ifd;
@@ -134,8 +116,6 @@ new_terminal(int ser_fd, int ifd, int ofd)
 
     ev_io_start(loop, &tm->ser_w);
     ev_io_start(loop, &tm->tty_w);
-
-    SLIST_INSERT_HEAD(&tm_head, tm,node );
 
     tm->cli.ifd = ifd;
     tm->cli.ofd = ofd;
@@ -150,24 +130,7 @@ new_terminal(int ser_fd, int ifd, int ofd)
 int
 close_terminal(int ifd)
 {
-    struct terminal *tm;
-    int ret = -1;
-
-    SLIST_FOREACH(tm, &tm_head, node) {
-
-        if ( tm->ifd == ifd ) {
-
-            ev_io_stop(EV_A_ &tm->ser_w);
-            ev_io_stop(EV_A_ &tm->tty_w);
-        }
-    }
-
-    if (tm) {
-        SLIST_REMOVE(&tm_head, tm, terminal, node);
-        ret = 0;
-    }
-
-    return ret;
+    return ifd;
 }
 
 void
