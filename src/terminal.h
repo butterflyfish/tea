@@ -32,8 +32,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TERMINAL_H_
 #define TERMINAL_H_
 
-int
+#include <ev.h>
+#include "cli.h"
+
+struct terminal {
+
+    int ser_fd;    /* represent serial port */
+
+    /* represent controlling tty */
+    int ifd;     /* read from this fd */
+    int ofd;     /* write to this fd */
+    struct cli cli;
+
+    ev_io ser_w;   /* serial port watcher */
+    ev_io tty_w;   /* controling tty watcher */
+};
+
+/* create a new terminal */
+struct terminal *
 new_terminal(int ser_fd, int ifd, int ofd);
+
+/* free a new terminal created by new_terminal */
+void
+delete_terminal(struct terminal *tm);
 
 void
 xfer_init(void);

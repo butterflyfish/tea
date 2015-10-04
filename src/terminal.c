@@ -34,23 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <stddef.h>
 #include <fcntl.h>
-#include <ev.h>
 #include "terminal.h"
-#include "cli.h"
-
-struct terminal {
-
-    int ser_fd;    /* represent serial port */
-
-    /* represent controlling tty */
-    int ifd;     /* read from this fd */
-    int ofd;     /* write to this fd */
-    struct cli cli;
-
-    ev_io ser_w;   /* serial port watcher */
-    ev_io tty_w;   /* controling tty watcher */
-};
-
 
 static struct ev_loop *loop;
 
@@ -101,7 +85,7 @@ tty_read (EV_P_ struct ev_io *w, int revents)
     write(tm->ser_fd, &buf, 1);
 }
 
-int
+struct terminal *
 new_terminal(int ser_fd, int ifd, int ofd)
 {
     struct terminal *tm;
@@ -124,13 +108,13 @@ new_terminal(int ser_fd, int ifd, int ofd)
 
     fcntl(tm->ifd, F_SETFL, fcntl(tm->ifd, F_GETFL, 0)|O_NONBLOCK);
 
-    return 0;
+    return tm;
 }
 
-int
-close_terminal(int ifd)
+void
+delete_terminal(struct terminal *tm)
 {
-    return ifd;
+    if(tm) free(tm);
 }
 
 void
