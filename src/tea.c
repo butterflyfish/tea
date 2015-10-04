@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <getopt.h>
 #include "serial.h"
-#include "xfer.h"
+#include "terminal.h"
 
 static char *ver = "2005.8.16";
 
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
 
     xfer_init();
 
-    new_emulator(fd, 0, 1);
+    new_terminal(fd, 0, 1);
 
     xfer_loop();
     return 0;

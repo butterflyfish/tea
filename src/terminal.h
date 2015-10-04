@@ -1,4 +1,4 @@
-/* xfer.c: delivery char between user input and serial port
+/* terminal.h: delivery char between user input and serial port
  *
 opyright © 2015 Michael Zhu <boot2linux@gmail.com>
 All rights reserved.
@@ -29,11 +29,11 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef XFER_H_
-#define XFER_H_
+#ifndef TERMINAL_H_
+#define TERMINAL_H_
 
 int
-new_emulator(int ser_fd, int ifd, int ofd);
+new_terminal(int ser_fd, int ifd, int ofd);
 
 void
 xfer_init(void);
