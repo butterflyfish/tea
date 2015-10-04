@@ -31,27 +31,50 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _CLI_H
 #define _CLI_H
 
+#include <termios.h>
+
+/* cli object */
+struct cli;
+
+/* cli command */
+struct command {
+
+     const char *name;
+     int (*func)(struct cli *cli, int argc, char **argv);
+     const char *params;
+     const char *summary;
+
+};
+
+struct cli {
+
+    int ifd;     /* read from this fd */
+    int ofd;     /* write to this fd */
+    int ser_fd;   /* fd of serial port */
+
+    /* used internally */
+    struct command *cmdtbl;
+    struct termios origin;
+};
+
+
 /*
  * enable raw mode for controlling tty @ifd
  */
 int
-enable_raw_mode(int ifd);
+enable_raw_mode(struct cli *cli);
 
 void
-disable_raw_mode(int ifd);
+disable_raw_mode(struct cli *cli);
 
 /*
  * interactive shell
  *
  * jump to serial again if only pressing Enter key
  *
- * @ser_fd: represent which serial port
- * @ifd: input of controlling tty
- * @ofd: output of controlling tty
- *
  */
 void
-cli_loop(int ifd, int ofd, int ser_fd);
+cli_loop(struct cli *cli);
 
 
 #endif

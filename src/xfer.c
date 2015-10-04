@@ -46,6 +46,7 @@ struct emulator {
     /* represent controlling tty */
     int ifd;     /* read from this fd */
     int ofd;     /* write to this fd */
+    struct cli cli;
 
     ev_io ser_w;   /* serial port watcher */
     ev_io tty_w;   /* controling tty watcher */
@@ -73,7 +74,7 @@ ser_read (EV_P_ struct ev_io *w, int revents)
     if( len <= 0) {
         ev_io_stop(EV_A_ &em->ser_w);
         ev_io_stop(EV_A_ &em->tty_w);
-        disable_raw_mode(em->ifd);
+        disable_raw_mode(&em->cli);
     }
     write(em->ofd, buf, len);
 }
@@ -96,15 +97,8 @@ tty_read (EV_P_ struct ev_io *w, int revents)
     if ( buf == 29 ) {
 
         ev_suspend(loop);
-
-        fcntl(em->ifd, F_SETFL, fcntl(em->ifd, F_GETFL, 0) & ~O_NONBLOCK);
-
-        cli_loop(em->ifd, em->ofd, em->ser_fd);
-
-        fcntl(em->ifd, F_SETFL, fcntl(em->ifd, F_GETFL, 0) | O_NONBLOCK);
-
+        cli_loop(&em->cli);
         ev_resume(loop);
-
         return;
     }
 
@@ -143,7 +137,11 @@ new_emulator(int ser_fd, int ifd, int ofd)
 
     SLIST_INSERT_HEAD(&em_head, em,node );
 
-    enable_raw_mode(em->ifd);
+    em->cli.ifd = ifd;
+    em->cli.ofd = ofd;
+    em->cli.ser_fd = ser_fd;
+    enable_raw_mode(&em->cli);
+
     fcntl(em->ifd, F_SETFL, fcntl(em->ifd, F_GETFL, 0)|O_NONBLOCK);
 
     return 0;
