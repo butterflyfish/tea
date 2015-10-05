@@ -62,6 +62,9 @@ int main(int argc, char *argv[])
     int version = 0;
     char *device = NULL;
 
+    struct terminal *tm;
+    struct aev_loop *loop = aev_loop_new(8);
+
     struct option long_options[] = {
 
         {"version", no_argument,       &version, 1},
@@ -125,10 +128,9 @@ int main(int argc, char *argv[])
 
     fprintf(stderr, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
 
-    xfer_init();
+    tm = new_terminal(loop, fd, 0, 1);
+    aev_run(loop);
+    delete_terminal(tm);
 
-    new_terminal(fd, 0, 1);
-
-    xfer_loop();
     return 0;
 }

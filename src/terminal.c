@@ -36,24 +36,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fcntl.h>
 #include "terminal.h"
 
-static struct ev_loop *loop;
-
-#define container_of(ptr, type, member) ({                      \
-        const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
-        (type *)( (char *)__mptr - offsetof(type,member) );})
 
 /* read  from serial port and then write to controlling tty */
 static void
-ser_read (EV_P_ struct ev_io *w, int revents)
+ser_read (struct aev_loop *loop, aev_io *w, int evmask)
 {
     int len;
     char buf[1024];
-    struct terminal *tm = container_of(w, struct terminal, ser_w);
+    struct terminal *tm = w->data;
 
     len = read(tm->ser_fd, buf, sizeof buf);
     if( len <= 0) {
-        ev_io_stop(EV_A_ &tm->ser_w);
-        ev_io_stop(EV_A_ &tm->tty_w);
+        aev_io_stop(loop, &tm->ser_w);
+        aev_io_stop(loop, &tm->tty_w);
         disable_raw_mode(&tm->cli);
     }
     write(tm->ofd, buf, len);
@@ -61,11 +56,11 @@ ser_read (EV_P_ struct ev_io *w, int revents)
 
 /* read from controlling tty and then write to serial port */
 static void
-tty_read (EV_P_ struct ev_io *w, int revents)
+tty_read (struct aev_loop *loop, aev_io *w, int evmask)
 {
     int len;
     unsigned char buf;
-    struct terminal *tm = container_of(w, struct terminal, tty_w);
+    struct terminal *tm = w->data;
 
     len = read(tm->ifd, &buf, 1);
 
@@ -76,9 +71,7 @@ tty_read (EV_P_ struct ev_io *w, int revents)
      /* esc key: Ctrl-] */
     if ( buf == 29 ) {
 
-        ev_suspend(loop);
         cli_loop(&tm->cli);
-        ev_resume(loop);
         return;
     }
 
@@ -86,7 +79,7 @@ tty_read (EV_P_ struct ev_io *w, int revents)
 }
 
 struct terminal *
-new_terminal(int ser_fd, int ifd, int ofd)
+new_terminal(struct aev_loop *loop, int ser_fd, int ifd, int ofd)
 {
     struct terminal *tm;
 
@@ -95,18 +88,16 @@ new_terminal(int ser_fd, int ifd, int ofd)
     tm->ifd = ifd;
     tm->ofd = ofd;
 
-    ev_io_init(&tm->ser_w, ser_read, ser_fd, EV_READ);
-    ev_io_init(&tm->tty_w, tty_read, ifd, EV_READ);
+    aev_io_init(&tm->ser_w, ser_fd, ser_read,  AEV_READ, tm);
+    aev_io_init(&tm->tty_w, ifd, tty_read,  AEV_READ, tm);
 
-    ev_io_start(loop, &tm->ser_w);
-    ev_io_start(loop, &tm->tty_w);
+    aev_io_start(loop, &tm->ser_w);
+    aev_io_start(loop, &tm->tty_w);
 
     tm->cli.ifd = ifd;
     tm->cli.ofd = ofd;
     tm->cli.ser_fd = ser_fd;
     enable_raw_mode(&tm->cli);
-
-    fcntl(tm->ifd, F_SETFL, fcntl(tm->ifd, F_GETFL, 0)|O_NONBLOCK);
 
     return tm;
 }
@@ -115,19 +106,4 @@ void
 delete_terminal(struct terminal *tm)
 {
     if(tm) free(tm);
-}
-
-void
-xfer_init(void)
-{
-    loop = EV_DEFAULT;
-}
-
-void
-xfer_loop()
-{
-    ev_run (loop, 0);
-
-    /* break was called, so exit */
-    return;
 }
