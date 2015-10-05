@@ -50,17 +50,25 @@ $1_OBJ+=$(OBJDIR)/$(basename $2).o
 endef
 
 # rules to produce archive
+#
 # object rules should use function rule-compile-c
-# $(eval $(call rule rule-libar,ar_name))
+# don't forget to add newline before endef, else $(eval $(foreach a, $(LIBAR), $(call rule-libar,$a)))
+# failed on multiple LIBAR
+#
+# $(eval $(call rule-libar,ar_name))
 define rule-libar
 $1: $($1_OBJ)
 	$(quiet)$(MKDIR) $(LIBDIR)
 	$(quiet)$$(AR) $$(arflags) $(LIBDIR)/lib$$@.a $$< >/dev/null
 	$(quiet)$$(RANLIB) $(LIBDIR)/lib$$@.a  >/dev/null
 	$(quiet)printf "Create archive $(color_grn)$(LIBDIR)/lib$$@.a$(color_end)\n"
+
 endef
 
 # rules to produce final utility $1
+#
+# don't forget to add newline before endef
+#
 # $(eval $(call rule-produce-bin,name,flags))
 define rule-produce-bin
 $1: $($1_OBJ)
@@ -68,4 +76,5 @@ $1: $($1_OBJ)
 	$(quiet)$(MKDIR) $(BINDIR)
 	$(quiet)mv $$@ $(BINDIR)
 	$(quiet)printf "$(color_blu)$$@$(color_end) is produced under $(BINDIR)\n"
+
 endef
