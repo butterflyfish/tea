@@ -30,11 +30,22 @@
 BIN := tea
 
 tea_SRC   := src
-tea_LIBAR := kermit
+tea_LIBAR := kermit aev
 tea_LDFLAGS := -lev
 
 LIBAR := kermit
 kermit_SRC := deps/ek/kermit.c
+
+LIBAR += aev
+aev_SRC = deps/libaev
+
+kernel:=$(shell uname -s)
+ifeq ($(kernel),Linux)
+aev_CPPFLAGS = -DHAVE_EPOLL
+endif
+ifeq ($(kernel),Darwin)
+aev_CPPFLAGS = -DHAVE_KQUEUE
+endif
 
 
 #CFLAGS = -Wall -Werror -O3
@@ -43,3 +54,5 @@ CFLAGS :=  -O3
 # for deps/ek/kermit.c
 CPPFLAGS := -DNODEBUG
 CFLAGS += -I deps/ek
+
+CFLAGS += -I deps/libaev
