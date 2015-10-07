@@ -1,5 +1,5 @@
 # Tea
-[ Tea ]( https://github.com/boot2linux/tea ) - A simple terminal program for the serial port.
+[Tea] - A simple terminal program for the serial port.
 
 ## Features
 
@@ -7,19 +7,30 @@
 * open one idle seril port automatically
 * exit automatically if serial ports opened are removed
 * control termial. Trigger key is Ctrl-]
-* send file via serial communication protocol: kermit
+* send file via serial communication protocol: kermit,xmodem,ymodem
+
 
 ## How to build ?
 
-Install dependency *libev* first, and then run *make*. Taking MAC OSX as an example:
+[Tea] have zero dependency. Just need to *make* it.
 
 ```sh
-brew install libev
-git clone https://github.com/boot2linux/tea.git
+git clone https://github.com/butterflyfish/tea.git
 cd tea
 make
-install -m 755 build/bin/tea /usr/local/bin
+make install
 ```
 
+## Acknowledgement
+* [E-Kermit]
+
+
 ## License
-licensed under four caluse BSD.
+Licensed under four caluse BSD.
+
+Copyright © 2015, Michael Zhu  boot2linux at gmail.com
+
+All rights reserved.
+
+[Tea]: https://github.com/butterflyfish/tea
+[E-Kermit]: http://www.columbia.edu/kermit/ek.html
