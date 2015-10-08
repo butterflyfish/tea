@@ -31,7 +31,6 @@ BIN := tea
 
 tea_SRC   := src
 tea_LIBAR := kermit aev
-tea_LDFLAGS := -lev
 
 LIBAR := kermit
 kermit_SRC := deps/ek/kermit.c
