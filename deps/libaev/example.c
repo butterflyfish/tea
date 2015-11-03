@@ -38,14 +38,46 @@ static void stdin_cb(struct aev_loop *loop, aev_io *w, int evmask)
     fgets(buf, sizeof buf, stdin);
 }
 
+static void timer_cb(struct aev_loop *loop, aev_timer *w)
+{
+    static int counter = 0;
+    counter++;
+    printf ("timer(ID=%d) is out\n", w->ident);
+
+    if (counter == 2) {
+        printf("change timeout of timer(ID=%d) to 2s\n", w->ident);
+        aev_timer_set(w, 2000, 1);
+        aev_timer_restart(loop, w);
+    }
+
+    if(counter >= 3)
+        aev_timer_stop(loop, w);
+}
+
+static void timer_oneshot(struct aev_loop *loop, aev_timer *w)
+{
+    printf ("timer(ID=%d) is out, oneshot\n", w->ident);
+}
+
+
 int main(int argc, char *argv[])
 {
-	struct aev_loop *loop = aev_loop_new(8);
-	struct aev_io w;
+    struct aev_loop loop;
+    struct aev_io w;
+    aev_timer tm;
+    aev_timer oneshot;
 
-	aev_io_init(&w,0,stdin_cb,AEV_READ,NULL);
-	aev_io_start(loop, &w);
+    aev_loop_init(&loop);
 
-	aev_run(loop);
+    aev_io_init(&w,0,stdin_cb,AEV_READ,NULL);
+    aev_io_start(&loop, &w);
+
+    aev_timer_init(&tm,timer_cb,500,1);
+    aev_timer_init(&oneshot,timer_oneshot,500,0);
+
+    aev_timer_start(&loop, &tm);
+    aev_timer_start(&loop, &oneshot);
+
+    aev_run(&loop);
     return 0;
 }

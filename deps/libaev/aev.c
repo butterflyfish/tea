@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdlib.h>
+#include <string.h>
 
 #ifdef HAVE_KQUEUE
 #include "aev_kqueue.h"
@@ -60,36 +60,30 @@ int aev_ref_put(struct aev_loop *loop){
 static void aev_loop_delete(struct aev_loop *loop)
 {
     close(loop->aevfd);
-
-    if (loop) {
-        free(loop->paev);
-        free(loop);
-    }
 }
 
-struct aev_loop * aev_loop_new(int setsize){
+int aev_loop_init(struct aev_loop *loop){
 
-    int ret;
-    struct aev_loop *loop;
-
-    loop = malloc(sizeof(struct aev_loop));
-    if (loop == NULL)
-        return NULL;
-
-    loop->setsize = setsize;
-    loop->paev = NULL;
+    memset(loop, 0, sizeof(struct aev_loop));
 
     loop->ref.count = 0;
     loop->ref.free = aev_loop_delete;
 
-    if (_aev_loop_new(loop)) {
-
-        free(loop);
-        return NULL;
-    }
-
-    return loop;
+    return _aev_loop_init(loop);
 }
+
+int aev_run(struct aev_loop *loop){
+    int ret = 0;
+
+    if (loop == NULL || loop->ref.count == 0) return -1;
+
+    while(1) {
+        ret = _aev_run(loop);
+        if ( ret < 0) break;
+    }
+    return ret;
+}
+
 
 int aev_io_init(aev_io *w, int fd, aev_io_cb cb,
                int evmask, void *data){
@@ -111,15 +105,34 @@ int aev_io_stop(struct aev_loop *loop, aev_io *w)
     return _aev_io_stop(loop,w);
 }
 
-int aev_run(struct aev_loop *loop){
-    int ret = 0;
 
-    if (loop == NULL) return -1;
 
-    while(1) {
-        ret = _aev_run(loop);
-        if ( ret < 0) break;
-    }
-    return ret;
+void aev_timer_set(aev_timer *w, unsigned long ms, char periodic) {
+
+    AEV_TIMER_INIT(NULL, ms, periodic);
 }
 
+int aev_timer_init(aev_timer *w, aev_timer_cb cb,  unsigned long ms,
+                   char periodic) {
+
+    AEV_TIMER_INIT(cb, ms, periodic);
+
+    return _aev_timer_init(w);
+}
+
+int aev_timer_start(struct aev_loop *loop, aev_timer *w) {
+
+    return _aev_timer_start(loop, w);
+}
+
+int aev_timer_stop(struct aev_loop *loop, aev_timer *w) {
+
+    return _aev_timer_stop(loop, w);
+}
+
+
+
+int aev_timer_restart(struct aev_loop *loop, aev_timer *w) {
+
+    return _aev_timer_restart(loop, w);
+}

@@ -30,7 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
-#include <stdlib.h>
 
 #include "aev.h"
 
@@ -73,17 +72,53 @@ static inline int _aev_io_stop(struct aev_loop *loop, aev_io *w)
     return ret;
 }
 
-int _aev_loop_new( struct aev_loop *loop){
+static inline int _aev_timer_init(aev_timer *w) {
 
-    if (loop->paev == NULL) {
-        loop->aevfd = kqueue();
-        loop->paev = malloc(loop->setsize * sizeof(struct kevent));
-    } else {
-        free(loop->paev);
-        loop->paev = malloc(loop->setsize * sizeof(struct kevent));
-    }
+    w->ident = kqueue(); /* using kqueue to create unique ID */
+    if (w->ident < 0)
+        return w->ident;
 
-    return loop->paev ? 0 : -1;
+    return 0;
+}
+
+static inline int _aev_timer_restart(struct aev_loop *loop, aev_timer *w) {
+
+    struct kevent ke;
+    uint16_t flags = EV_ADD;
+
+    if ( 0 == w->periodic )
+        flags |= EV_ONESHOT;
+
+    EV_SET(&ke, w->ident, EVFILT_TIMER, flags, 0, w->timeout, w);
+    if (kevent(loop->aevfd, &ke, 1, NULL, 0, NULL) == -1) return -1;
+
+    return 0;
+}
+
+static inline int _aev_timer_start(struct aev_loop *loop, aev_timer *w) {
+
+    int ret;
+    ret = _aev_timer_restart(loop, w);
+    if (0 == ret) aev_ref_get(loop);
+    return ret;
+}
+
+static inline int _aev_timer_stop(struct aev_loop *loop, aev_timer *w) {
+    struct kevent ke;
+
+    EV_SET(&ke, w->ident, EVFILT_TIMER, EV_DELETE, 0, w->timeout, w);
+    if (kevent(loop->aevfd, &ke, 1, NULL, 0, NULL) == -1) return -1;
+
+    aev_ref_put(loop);
+
+    return 0;
+}
+
+
+static inline int _aev_loop_init( struct aev_loop *loop){
+
+    loop->aevfd = kqueue();
+    return loop->aevfd;
 }
 
 static inline int _aev_run(struct aev_loop *loop){
@@ -91,10 +126,11 @@ static inline int _aev_run(struct aev_loop *loop){
     int j;
     int evmask = 0;
     int numevents = 0;
-    aev_io *w;
-    struct kevent *events = (struct kevent *)(loop->paev);
+    aev_io *io;
+    aev_timer *tm;
+    struct kevent events[AEV_MAX_EVENT_SIZE];
 
-    numevents = kevent(loop->aevfd, NULL, 0, events, loop->setsize, NULL);
+    numevents = kevent(loop->aevfd, NULL, 0, events, AEV_MAX_EVENT_SIZE, NULL);
 
     if (numevents < 0)
         return numevents;
@@ -102,10 +138,19 @@ static inline int _aev_run(struct aev_loop *loop){
     for(j = 0; j < numevents; j++) {
         struct kevent *ke = events+j;
 
+        if ( ke->filter == EVFILT_TIMER ) {
+            tm = (aev_timer *)(ke->udata);
+            tm->cb(loop, tm);
+            if (0 == tm->periodic)
+                aev_ref_put(loop);
+
+            continue;
+        }
+
         if (ke->filter == EVFILT_READ) evmask |= AEV_READ;
         if (ke->filter == EVFILT_WRITE) evmask |= AEV_WRITE;
-        w = (aev_io*)(ke->udata);
-        w->cb(loop, w, evmask);
+        io = (aev_io*)(ke->udata);
+        io->cb(loop, io, evmask);
     }
     return 0;
 }
