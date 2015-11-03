@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     char *device = NULL;
 
     struct terminal *tm;
-    struct aev_loop *loop = aev_loop_new(8);
+    struct aev_loop loop;
 
     struct option long_options[] = {
 
@@ -128,8 +128,9 @@ int main(int argc, char *argv[])
 
     fprintf(stderr, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
 
-    tm = new_terminal(loop, fd, 0, 1);
-    aev_run(loop);
+    aev_loop_init(&loop);
+    tm = new_terminal(&loop, fd, 0, 1);
+    aev_run(&loop);
     delete_terminal(tm);
 
     return 0;
