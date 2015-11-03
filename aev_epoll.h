@@ -28,7 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sys/epoll.h>
-#include <stdlib.h>
 
 #include "aev.h"
 
@@ -63,17 +62,10 @@ static inline int _aev_io_stop(struct aev_loop *loop, aev_io *w)
     return ret;
 }
 
-int _aev_loop_new( struct aev_loop *loop){
+int _aev_loop_init( struct aev_loop *loop){
 
-    if (loop->paev == NULL) {
-        loop->aevfd = epoll_create1(0);
-        loop->paev = malloc(loop->setsize * sizeof(struct epoll_event));
-    } else {
-        free(loop->paev);
-        loop->paev = malloc(loop->setsize * sizeof(struct epoll_event));
-    }
-
-    return loop->paev ? 0 : -1;
+    loop->aevfd = epoll_create1(0);
+    return loop->aevfd;
 }
 
 static inline int _aev_run(struct aev_loop *loop){
@@ -82,9 +74,9 @@ static inline int _aev_run(struct aev_loop *loop){
     int evmask = 0;
     int numevents = 0;
     aev_io *w;
-    struct epoll_event *events = (struct epoll_event *)(loop->paev);
+    struct epoll_event events[AEV_MAX_EVENT_SIZE];
 
-    numevents = epoll_wait(loop->aevfd, events, loop->setsize, NULL);
+    numevents = epoll_wait(loop->aevfd, events, AEV_MAX_EVENT_SIZE, NULL);
 
     if (numevents < 0)
         return numevents;
