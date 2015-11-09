@@ -45,8 +45,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 struct serial {
 
-    struct termios attr;
-
     int fd;
     char path[100];
     SLIST_ENTRY(serial) node;
@@ -156,7 +154,7 @@ open_serial(char *name)
 {
     int fd;
     struct serial *serial = NULL;
-    struct termios *attr;
+    struct termios attr;
     struct flock lock, savelock;
 
     fd = _open(name);
@@ -181,7 +179,6 @@ open_serial(char *name)
     SLIST_FOREACH(serial, &serial_head, node){
         if (strstr(serial->path, name)){
                 serial->fd = fd;
-                attr = &serial->attr;
                 break;
         }
     }
@@ -189,7 +186,7 @@ open_serial(char *name)
     if (!serial)
         return -ENOENT;
 
-    if (tcgetattr(fd, attr))
+    if (tcgetattr(fd, &attr))
     {
         perror("tcgetattr");
         return -1;
@@ -199,22 +196,22 @@ open_serial(char *name)
      * a break condition detected on input is ignored,
      * a byte with a framing or parity error is ignored
      */
-    attr->c_iflag = IGNBRK | IGNPAR;
+    attr.c_iflag = IGNBRK | IGNPAR;
 
     /*
      * enable receiver
      * a connection does not depend on the state of the modem status lines
      * 8 bits are used for both transmission and reception
     */
-    attr->c_cflag = CREAD | CLOCAL | CS8 ;
+    attr.c_cflag = CREAD | CLOCAL | CS8 ;
 
     /*  set default baudrate to 115200 */
-    cfsetspeed(attr, B115200);
+    cfsetspeed(&attr, B115200);
 
-    attr->c_oflag = 0;
-    attr->c_lflag = 0;
+    attr.c_oflag = 0;
+    attr.c_lflag = 0;
 
-    if (tcsetattr(fd,TCSAFLUSH,attr))
+    if (tcsetattr(fd,TCSAFLUSH,&attr))
     {
         perror("tcsetattr");
         return -1;
