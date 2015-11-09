@@ -35,24 +35,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <termios.h>
 #include "kermit_io.h"
 #include "xymodem.h"
 #include "cli.h"
 
-static int
-cmd_quit(struct cli *cli, int argc, char **argv);
+
+static struct termios termios_origin;
 
 static int
-cmd_help(struct cli *cli, int argc, char **argv);
+cmd_quit(struct terminal *tm, int argc, char **argv);
 
 static int
-cmd_kermit_send(struct cli *cli, int argc, char **argv);
+cmd_help(struct terminal *tm, int argc, char **argv);
 
 static int
-cmd_xmodem_send(struct cli *cli, int argc, char **argv);
+cmd_kermit_send(struct terminal *tm, int argc, char **argv);
 
 static int
-cmd_ymodem_send(struct cli *cli, int argc, char **argv);
+cmd_xmodem_send(struct terminal *tm, int argc, char **argv);
+
+static int
+cmd_ymodem_send(struct terminal *tm, int argc, char **argv);
 
 struct command cmdtbl[] = {
 
@@ -66,18 +70,18 @@ struct command cmdtbl[] = {
 
 
 static int
-cmd_quit(struct cli *cli, int argc, char **argv){
+cmd_quit(struct terminal *tm, int argc, char **argv){
 
     exit(0);
 }
 
 static int
-cmd_help(struct cli *cli, int argc, char **argv){
+cmd_help(struct terminal *tm, int argc, char **argv){
 
     struct command *cmd;
     int i=0;
 
-    for(cmd = &cli->cmdtbl[0]; cmd->name; cmd = &cli->cmdtbl[++i]) {
+    for(cmd = &cmdtbl[0]; cmd->name; cmd = &cmdtbl[++i]) {
 
         printf("\r\n  \x1b[1m%s\x1b[0m \x1b[90m%s\x1b[0m\r\n", cmd->name, cmd->params);
         printf("  \x1b[33msummary:\x1b[0m %s\r\n", cmd->summary);
@@ -87,36 +91,36 @@ cmd_help(struct cli *cli, int argc, char **argv){
 }
 
 static int
-cmd_kermit_send(struct cli *cli, int argc, char **argv){
+cmd_kermit_send(struct terminal *tm, int argc, char **argv){
 
     if ( argc != 2 )
         return -1;
 
-    if ( kermit_send_file(cli->ser_fd, &argv[1]) )
+    if ( kermit_send_file(tm->serfd, &argv[1]) )
         fprintf(stderr, "send file failed!\n");
 
     return 0;
 }
 
 static int
-cmd_ymodem_send(struct cli *cli, int argc, char **argv){
+cmd_ymodem_send(struct terminal *tm, int argc, char **argv){
 
     if ( argc != 2 )
         return -1;
 
-    if ( xymodem_send_file(1024, cli->ser_fd, argv[1]) )
+    if ( xymodem_send_file(1024, tm->serfd, argv[1]) )
         fprintf(stderr, "send file failed!\n");
 
     return 0;
 }
 
 static int
-cmd_xmodem_send(struct cli *cli, int argc, char **argv){
+cmd_xmodem_send(struct terminal *tm, int argc, char **argv){
 
     if ( argc != 2 )
         return -1;
 
-    if ( xymodem_send_file(128, cli->ser_fd, argv[1]) )
+    if ( xymodem_send_file(128, tm->serfd, argv[1]) )
         fprintf(stderr, "send file failed!\n");
 
     return 0;
@@ -124,7 +128,7 @@ cmd_xmodem_send(struct cli *cli, int argc, char **argv){
 
 
 static void
-cli_exec(struct cli *cli, char *buf) {
+cli_exec(struct terminal *tm, char *buf) {
 
     #define MAX_ARGC 5
     char *argv[MAX_ARGC] = {0};
@@ -145,10 +149,10 @@ cli_exec(struct cli *cli, char *buf) {
         token= strtok(NULL,sep);
     }
 
-    for(cmd = &cli->cmdtbl[0]; cmd->name; cmd = &cli->cmdtbl[i++]) {
+    for(cmd = &cmdtbl[0]; cmd->name; cmd = &cmdtbl[i++]) {
 
         if ( 0 == strcmp(cmd->name, argv[0]) ) {
-            ret = cmd->func(cli, argc, argv);
+            ret = cmd->func(tm, argc, argv);
             if ( ret < 0 && cmd->params)
                 fprintf(stderr, "\x1b[33mSYNOPSIS:\x1b[0m %s %s\n", cmd->name, cmd->params);
 
@@ -167,14 +171,14 @@ cli_exec(struct cli *cli, char *buf) {
  * input is assembled into lines and special characters are processed.
  */
 int
-enable_raw_mode(struct cli * cli)
+enable_raw_mode(struct terminal *tm)
 {
     struct termios raw;
-    if ( !isatty(cli->ifd) )
+    if ( !isatty(tm->ifd) )
         return -1;
 
-    tcgetattr(cli->ifd, &cli->origin);
-    raw = cli->origin;
+    tcgetattr(tm->ifd, &termios_origin);
+    raw = termios_origin;
 
     raw.c_oflag = 0;
     raw.c_lflag = 0;
@@ -198,52 +202,51 @@ enable_raw_mode(struct cli * cli)
     raw.c_cc[VLNEXT] = _POSIX_VDISABLE;
     raw.c_cc[VDISCARD] = _POSIX_VDISABLE;
 
-    tcsetattr(cli->ifd, TCSAFLUSH, &raw);
+    tcsetattr(tm->ifd, TCSAFLUSH, &raw);
 
     return 0;
 }
 
 void
-disable_raw_mode(struct cli *cli)
+disable_raw_mode(struct terminal *tm)
 {
-    tcsetattr(cli->ifd, TCSAFLUSH, &cli->origin);
+    tcsetattr(tm->ifd, TCSAFLUSH, &termios_origin);
 }
 
 /*
  * interactive shell
  */
 void
-cli_loop(struct cli *cli)
+cli_loop(struct terminal *tm)
 {
     char buf[1024];
     int len;
 
-    fcntl(cli->ifd, F_SETFL, fcntl(cli->ifd, F_GETFL, 0) & ~O_NONBLOCK);
+    fcntl(tm->ifd, F_SETFL, fcntl(tm->ifd, F_GETFL, 0) & ~O_NONBLOCK);
 
-    cli->cmdtbl = cmdtbl;
-    disable_raw_mode(cli);
+    disable_raw_mode(tm);
 
-    write(cli->ofd, "\n", sizeof "\n");
+    write(tm->ofd, "\n", sizeof "\n");
 
     /* green color */
     fprintf(stderr, "\n\033[1;32mPress Enter to resume the connection,type help get command list.\033[0m\n");
 
     while(1)
     {
-        write(cli->ofd, "Tea> ", sizeof "Tea> ");
+        write(tm->ofd, "Tea> ", sizeof "Tea> ");
 
-        len = read(cli->ifd, buf, sizeof buf);
+        len = read(tm->ifd, buf, sizeof buf);
         buf[len] = 0;
 
         /* to jump out setup */
         if ( buf[0] == '\n' ) {
-            write(cli->ser_fd, buf, 1);
+            write(tm->serfd, buf, 1);
             break;
         }
 
-        cli_exec(cli, buf);
+        cli_exec(tm, buf);
     }
 
-    enable_raw_mode(cli);
-    fcntl(cli->ifd, F_SETFL, fcntl(cli->ifd, F_GETFL, 0) | O_NONBLOCK);
+    enable_raw_mode(tm);
+    fcntl(tm->ifd, F_SETFL, fcntl(tm->ifd, F_GETFL, 0) | O_NONBLOCK);
 }

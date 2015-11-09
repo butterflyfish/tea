@@ -33,16 +33,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TERMINAL_H_
 
 #include "aev.h"
-#include "cli.h"
+#include "serial.h"
 
 struct terminal {
 
-    int ser_fd;    /* represent serial port */
+    int serfd;    /* represent serial port */
 
     /* represent controlling tty */
     int ifd;     /* read from this fd */
     int ofd;     /* write to this fd */
-    struct cli cli;
 
     aev_io ser_w;   /* serial port watcher */
     aev_io tty_w;   /* controling tty watcher */
@@ -50,7 +49,7 @@ struct terminal {
 
 /* create a new terminal */
 struct terminal *
-new_terminal(struct aev_loop *loop, int ser_fd, int ifd, int ofd);
+new_terminal(struct aev_loop *loop, int serfd, int ifd, int ofd);
 
 /* free a new terminal created by new_terminal */
 void

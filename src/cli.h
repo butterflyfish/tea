@@ -31,41 +31,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _CLI_H
 #define _CLI_H
 
-#include <termios.h>
-
-/* cli object */
-struct cli;
+#include "terminal.h"
 
 /* cli command */
 struct command {
 
      const char *name;
-     int (*func)(struct cli *cli, int argc, char **argv);
+     int (*func)(struct terminal *tm, int argc, char **argv);
      const char *params;
      const char *summary;
 
 };
 
-struct cli {
-
-    int ifd;     /* read from this fd */
-    int ofd;     /* write to this fd */
-    int ser_fd;   /* fd of serial port */
-
-    /* used internally */
-    struct command *cmdtbl;
-    struct termios origin;
-};
-
-
 /*
  * enable raw mode for controlling tty @ifd
  */
 int
-enable_raw_mode(struct cli *cli);
+enable_raw_mode(struct terminal *tm);
 
 void
-disable_raw_mode(struct cli *cli);
+disable_raw_mode(struct terminal *tm);
 
 /*
  * interactive shell
@@ -74,7 +59,7 @@ disable_raw_mode(struct cli *cli);
  *
  */
 void
-cli_loop(struct cli *cli);
+cli_loop(struct terminal *tm);
 
 
 #endif

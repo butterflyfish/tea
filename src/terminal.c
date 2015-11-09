@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stddef.h>
 #include <fcntl.h>
 #include "terminal.h"
+#include "cli.h"
 
 
 /* read  from serial port and then write to controlling tty */
@@ -45,11 +46,11 @@ ser_read (struct aev_loop *loop, aev_io *w, int evmask)
     char buf[1024];
     struct terminal *tm = w->data;
 
-    len = read(tm->ser_fd, buf, sizeof buf);
+    len = read(tm->serfd, buf, sizeof buf);
     if( len <= 0) {
         aev_io_stop(loop, &tm->ser_w);
         aev_io_stop(loop, &tm->tty_w);
-        disable_raw_mode(&tm->cli);
+        disable_raw_mode(tm);
     }
     write(tm->ofd, buf, len);
 }
@@ -71,33 +72,30 @@ tty_read (struct aev_loop *loop, aev_io *w, int evmask)
      /* esc key: Ctrl-] */
     if ( buf == 29 ) {
 
-        cli_loop(&tm->cli);
+        cli_loop(tm);
         return;
     }
 
-    write(tm->ser_fd, &buf, 1);
+    write(tm->serfd, &buf, 1);
 }
 
 struct terminal *
-new_terminal(struct aev_loop *loop, int ser_fd, int ifd, int ofd)
+new_terminal(struct aev_loop *loop, int serfd, int ifd, int ofd)
 {
     struct terminal *tm;
 
     tm = malloc( sizeof *tm);
-    tm->ser_fd = ser_fd;
+    tm->serfd = serfd;
     tm->ifd = ifd;
     tm->ofd = ofd;
 
-    aev_io_init(&tm->ser_w, ser_fd, ser_read,  AEV_READ, tm);
+    aev_io_init(&tm->ser_w, serfd, ser_read,  AEV_READ, tm);
     aev_io_init(&tm->tty_w, ifd, tty_read,  AEV_READ, tm);
 
     aev_io_start(loop, &tm->ser_w);
     aev_io_start(loop, &tm->tty_w);
 
-    tm->cli.ifd = ifd;
-    tm->cli.ofd = ofd;
-    tm->cli.ser_fd = ser_fd;
-    enable_raw_mode(&tm->cli);
+    enable_raw_mode(tm);
 
     return tm;
 }
