@@ -46,7 +46,7 @@ void usage()
             "Usage: tea [options]\n\n"
             "--version:             Show version\n"
             "--help|-h:             Help info\n"
-            "--device|-d:           Open this serial port. If no, try to open one automatically.\n"
+            "--device|-d:           Serial port name or path. If no, try to open one automatically\n"
             "--speed|-s:            Serial port speed. Default is 115200\n"
     );
 
