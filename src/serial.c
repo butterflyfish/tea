@@ -279,7 +279,7 @@ speed_to_baudrate(speed_t speed)
     return -1;
 }
 
-static speed_t
+speed_t
 baudrate_to_speed(int baudrate)
 {
     int i = 0;

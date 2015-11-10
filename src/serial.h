@@ -85,5 +85,11 @@ close_all_serials(void);
 void
 show_serial_setup(struct serial *ser, int fd);
 
+/* translate literal baudrate to speed_t
+ * @baudrate: literal baudrate,e.g. 115200
+ */
+speed_t
+baudrate_to_speed(int baudrate);
+
 #endif
 
