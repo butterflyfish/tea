@@ -43,15 +43,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "serial.h"
 
 
-struct serial {
-
-    struct termios attr;
-
-    int fd;
-    char path[100];
-    SLIST_ENTRY(serial) node;
-};
-
 static SLIST_HEAD(,serial) serial_head;
 
 static struct {
@@ -169,7 +160,7 @@ scan_serial(void)
  * open serial and load default value
  */
 int
-open_serial(char *name)
+open_serial(char *name, struct serial **ser)
 {
     int fd;
     struct serial *serial = NULL;
@@ -209,7 +200,7 @@ open_serial(char *name)
     if (tcgetattr(fd, attr))
     {
         perror("tcgetattr");
-        return -1;
+        return -errno;
     }
 
     /*
@@ -234,27 +225,27 @@ open_serial(char *name)
     if (tcsetattr(fd,TCSAFLUSH,attr))
     {
         perror("tcsetattr");
-        return -1;
+        return -errno;
     }
 
-    return fd;
+    *ser = serial;
+    return 0;
 }
 
 int
-open_one_idle_serial( void )
+open_one_idle_serial( struct serial **ser )
 {
     struct serial *serial;
-    int fd = -ENOENT;;
+    int ret = 0;
 
     SLIST_FOREACH(serial, &serial_head, node) {
 
-        fd = open_serial(serial->path);
-        if ( fd > 0 ) {
-            printf("open serial %s.\n", serial->path);
-            return fd;
+        ret = open_serial(serial->path, ser);
+        if ( ret < 0 ) {
+            return ret;
         }
     }
-    return fd;
+    return ret;
 }
 
 
@@ -303,31 +294,23 @@ baudrate_to_speed(int baudrate)
  * its output like utility stty
  *
  * @fd: where to write setup info
- * @serfd: fd of serial port
+ * @ser: point to serial port
  */
 void
-show_serial_setup(int serfd, int fd)
+show_serial_setup(struct serial *ser, int fd)
 {
-    struct termios tms;
+    struct termios *tms = &ser->attr;
     char buf[1024];
     int len = 0;
     int ret;
     int baudrate;
     int csize;
 
-    ret = tcgetattr(serfd, &tms);
-    if ( ret < 0 )
-    {
-        len += sprintf(buf, "Failed to get term io settings. Error: %s\n", strerror(ret) );
-        write(fd, buf, len);
-        return;
-    }
-
-    baudrate = speed_to_baudrate(cfgetispeed(&tms));
+    baudrate = speed_to_baudrate(cfgetispeed(tms));
     len += sprintf(buf+len, "Baudrate: %d\n", baudrate);
 
     /* the number of data bits */
-    switch( CSIZE & tms.c_cflag) {
+    switch( CSIZE & tms->c_cflag) {
         case CS8: csize = 8; break;
         case CS7: csize = 7; break;
         case CS6: csize = 6; break;
@@ -336,20 +319,20 @@ show_serial_setup(int serfd, int fd)
     len += sprintf(buf+len, "Number of data bits: %d\n", csize);
 
     /* stop bits: 1 or 2 */
-    len += sprintf(buf+len, "Stop bits: %d\n", CSTOPB & tms.c_cflag ? 2:1);
+    len += sprintf(buf+len, "Stop bits: %d\n", CSTOPB & tms->c_cflag ? 2:1);
 
     /* partiy check */
     len += sprintf(buf+len, "Parity: ");
-    if ( !(PARENB & tms.c_cflag) )
+    if ( !(PARENB & tms->c_cflag) )
         len += sprintf(buf+len, "Disabled\n");
-    else if (PARODD & tms.c_cflag )
+    else if (PARODD & tms->c_cflag )
         len += sprintf(buf+len, "odd\n");
     else
         len += sprintf(buf+len, "even\n");
 
     /* flow control */
     len += sprintf(buf+len, "Flow control: ");
-    if ((IXON & tms.c_iflag) && (IXOFF & tms.c_iflag))
+    if ((IXON & tms->c_iflag) && (IXOFF & tms->c_iflag))
         len += sprintf(buf+len, "Xon\n");
     else
         len += sprintf(buf+len, "Disabled\n");

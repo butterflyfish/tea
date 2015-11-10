@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 struct terminal {
 
-    int serfd;    /* represent serial port */
+    struct serial *ser;
 
     /* represent controlling tty */
     int ifd;     /* read from this fd */
@@ -49,7 +49,7 @@ struct terminal {
 
 /* create a new terminal */
 struct terminal *
-new_terminal(struct aev_loop *loop, int serfd, int ifd, int ofd);
+new_terminal(struct aev_loop *loop, struct serial *ser, int ifd, int ofd);
 
 /* free a new terminal created by new_terminal */
 void

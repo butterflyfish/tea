@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
 
     struct terminal *tm;
     struct aev_loop loop;
+    struct serial *ser;
 
     struct option long_options[] = {
 
@@ -108,7 +109,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    fd = device ? open_serial(device) : open_one_idle_serial();
+    fd = device ? open_serial(device, &ser) : open_one_idle_serial(&ser);
     if ( fd < 0 )
     {
         switch (fd) {
@@ -126,10 +127,11 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    fprintf(stderr, "Serial port %s is connected\n", ser->path);
     fprintf(stderr, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
 
     aev_loop_init(&loop);
-    tm = new_terminal(&loop, fd, 0, 1);
+    tm = new_terminal(&loop, ser, 0, 1);
     aev_run(&loop);
     delete_terminal(tm);
 

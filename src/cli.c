@@ -100,7 +100,7 @@ cmd_kermit_send(struct terminal *tm, int argc, char **argv){
     if ( argc != 2 )
         return -1;
 
-    if ( kermit_send_file(tm->serfd, &argv[1]) )
+    if ( kermit_send_file(tm->ser->fd, &argv[1]) )
         fprintf(stderr, "send file failed!\n");
 
     return 0;
@@ -112,7 +112,7 @@ cmd_ymodem_send(struct terminal *tm, int argc, char **argv){
     if ( argc != 2 )
         return -1;
 
-    if ( xymodem_send_file(1024, tm->serfd, argv[1]) )
+    if ( xymodem_send_file(1024, tm->ser->fd, argv[1]) )
         fprintf(stderr, "send file failed!\n");
 
     return 0;
@@ -124,7 +124,7 @@ cmd_xmodem_send(struct terminal *tm, int argc, char **argv){
     if ( argc != 2 )
         return -1;
 
-    if ( xymodem_send_file(128, tm->serfd, argv[1]) )
+    if ( xymodem_send_file(128, tm->ser->fd, argv[1]) )
         fprintf(stderr, "send file failed!\n");
 
     return 0;
@@ -133,7 +133,7 @@ cmd_xmodem_send(struct terminal *tm, int argc, char **argv){
 static int
 cmd_show(struct terminal *tm, int argc, char **argv){
 
-    show_serial_setup(tm->serfd, tm->ofd);
+    show_serial_setup(tm->ser, tm->ofd);
     return 0;
 }
 
@@ -250,7 +250,7 @@ cli_loop(struct terminal *tm)
 
         /* to jump out setup */
         if ( buf[0] == '\n' ) {
-            write(tm->serfd, buf, 1);
+            write(tm->ser->fd, buf, 1);
             break;
         }
 

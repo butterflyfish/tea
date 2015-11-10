@@ -46,7 +46,7 @@ ser_read (struct aev_loop *loop, aev_io *w, int evmask)
     char buf[1024];
     struct terminal *tm = w->data;
 
-    len = read(tm->serfd, buf, sizeof buf);
+    len = read(tm->ser->fd, buf, sizeof buf);
     if( len <= 0) {
         aev_io_stop(loop, &tm->ser_w);
         aev_io_stop(loop, &tm->tty_w);
@@ -76,20 +76,20 @@ tty_read (struct aev_loop *loop, aev_io *w, int evmask)
         return;
     }
 
-    write(tm->serfd, &buf, 1);
+    write(tm->ser->fd, &buf, 1);
 }
 
 struct terminal *
-new_terminal(struct aev_loop *loop, int serfd, int ifd, int ofd)
+new_terminal(struct aev_loop *loop, struct serial *ser, int ifd, int ofd)
 {
     struct terminal *tm;
 
     tm = malloc( sizeof *tm);
-    tm->serfd = serfd;
+    tm->ser = ser;
     tm->ifd = ifd;
     tm->ofd = ofd;
 
-    aev_io_init(&tm->ser_w, serfd, ser_read,  AEV_READ, tm);
+    aev_io_init(&tm->ser_w, ser->fd, ser_read,  AEV_READ, tm);
     aev_io_init(&tm->tty_w, ifd, tty_read,  AEV_READ, tm);
 
     aev_io_start(loop, &tm->ser_w);

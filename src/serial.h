@@ -35,6 +35,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <termios.h>
 #include <sys/queue.h>
 
+struct serial {
+
+    struct termios attr;
+
+    int fd;
+    char path[100];
+    SLIST_ENTRY(serial) node;
+};
 
 /*
  * scan serial port
@@ -49,16 +57,17 @@ scan_serial(void);
 
 /*
  * open serial and load default value
+ * return success(0) or error code
  */
 int
-open_serial(char *name);
+open_serial(char *name, struct serial **ser);
 
 /*
  * open one idle serial port
- * return fd or error code
+ * return success(0) or error code
  */
 int
-open_one_idle_serial( void );
+open_one_idle_serial( struct serial **ser );
 
 int
 close_serial(int fd);
@@ -71,10 +80,10 @@ close_all_serials(void);
  * its output like utility stty
  *
  * @fd: where to write setup info
- * @serfd: fd of serial port
+ * @ser: point to serial port
  */
 void
-show_serial_setup(int serfd, int fd);
+show_serial_setup(struct serial *ser, int fd);
 
 #endif
 
