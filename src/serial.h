@@ -66,5 +66,15 @@ close_serial(int fd);
 void
 close_all_serials(void);
 
+/*
+ * show setup information of serial port
+ * its output like utility stty
+ *
+ * @fd: where to write setup info
+ * @serfd: fd of serial port
+ */
+void
+show_serial_setup(int serfd, int fd);
+
 #endif
 

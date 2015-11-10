@@ -52,6 +52,23 @@ struct serial {
 
 static SLIST_HEAD(,serial) serial_head;
 
+static struct {
+    speed_t speed;
+    int baudrate;
+} ser_speed[ ] = {
+    {B0,       0},
+    {B300,     300},
+    {B1200,    1200},
+    {B2400,    2400},
+    {B4800,    4800},
+    {B9600,    9600},
+    {B19200,   19200},
+    {B38400,   38400},
+    {B57600,   57600},
+    {B115200,  115200},
+    {B230400,  230400},
+};
+
 
 #define MATCH_SERIAL_STR0 "tty.usbserial"
 #define MATCH_SERIAL_STR1 "ttyS"
@@ -255,35 +272,27 @@ close_all_serials(void)
 }
 
 static int
-serial_translate_baud(int inrate)
+speed_to_baudrate(speed_t speed)
 {
-    switch(inrate)
-    {
-        case 0:
-            return B0;
-        case 300:
-            return B300;
-        case 1200:
-            return B1200;
-        case 2400:
-            return B2400;
-        case 4800:
-            return B4800;
-        case 9600:
-            return B9600;
-        case 19200:
-            return B19200;
-        case 38400:
-            return B38400;
-        case 57600:
-            return B57600;
-        case 115200:
-            return B115200;
-        case 230400:
-            return B230400;
-        default:
-            return -1; /* do custom divisor */
-    }
+    int i = 0;
+
+    for( i=0; i<sizeof(ser_speed)/sizeof(ser_speed[0]); i++ )
+        if (speed == ser_speed[i].baudrate)
+            return ser_speed[i].baudrate;
+
+    return -1;
+}
+
+static speed_t
+baudrate_to_speed(int baudrate)
+{
+    int i = 0;
+
+    for( i=0; i<sizeof(ser_speed)/sizeof(ser_speed[0]); i++ )
+        if (baudrate == ser_speed[i].speed)
+            return ser_speed[i].speed;
+
+    return 0;
 }
 
 /*
@@ -291,9 +300,56 @@ serial_translate_baud(int inrate)
  * its output like utility stty
  *
  * @fd: where to write setup info
+ * @serfd: fd of serial port
  */
 void
-show_serial_setup(int fd)
+show_serial_setup(int serfd, int fd)
 {
-    write(fd, "Not implement\n", sizeof "Not implement\n");
+    struct termios tms;
+    char buf[1024];
+    int len = 0;
+    int ret;
+    int baudrate;
+    int csize;
+
+    ret = tcgetattr(serfd, &tms);
+    if ( ret < 0 )
+    {
+        len += sprintf(buf, "Failed to get term io settings. Error: %s\n", strerror(ret) );
+        write(fd, buf, len);
+        return;
+    }
+
+    baudrate = speed_to_baudrate(cfgetispeed(&tms));
+    len += sprintf(buf+len, "Baudrate: %d\n", baudrate);
+
+    /* the number of data bits */
+    switch( CSIZE & tms.c_cflag) {
+        case CS8: csize = 8; break;
+        case CS7: csize = 7; break;
+        case CS6: csize = 6; break;
+        case CS5: csize = 5; break;
+    }
+    len += sprintf(buf+len, "Number of data bits: %d\n", csize);
+
+    /* stop bits: 1 or 2 */
+    len += sprintf(buf+len, "Stop bits: %d\n", CSTOPB & tms.c_cflag ? 2:1);
+
+    /* partiy check */
+    len += sprintf(buf+len, "Parity: ");
+    if ( !(PARENB & tms.c_cflag) )
+        len += sprintf(buf+len, "Disabled\n");
+    else if (PARODD & tms.c_cflag )
+        len += sprintf(buf+len, "odd\n");
+    else
+        len += sprintf(buf+len, "even\n");
+
+    /* flow control */
+    len += sprintf(buf+len, "Flow control: ");
+    if ((IXON & tms.c_iflag) && (IXOFF & tms.c_iflag))
+        len += sprintf(buf+len, "Xon\n");
+    else
+        len += sprintf(buf+len, "Disabled\n");
+
+    write(fd, buf, len);
 }
