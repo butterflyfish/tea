@@ -63,21 +63,23 @@ static struct {
 };
 
 
-#define MATCH_SERIAL_STR0 "tty.usbserial"
-#define MATCH_SERIAL_STR1 "ttyS"
-#define MATCH_SERIAL_STR2 "ttyUSB"
+static char * find_path[] = {
+    "tty.usbserial",
+    "ttyS"
+    "ttyUSB"
+    "ttyACM"
+};
 
 static int
 match_serial(const struct dirent *entry)
 {
-    if ( !strncmp(entry->d_name, MATCH_SERIAL_STR0, sizeof MATCH_SERIAL_STR0 - 1) )
-        return 1;
+    int i;
 
-    if ( !strncmp(entry->d_name, MATCH_SERIAL_STR1, sizeof MATCH_SERIAL_STR1 - 1) )
-        return 1;
+    for (i=0; i < sizeof(find_path)/sizeof(find_path[0]); i++) {
+        if ( !strncmp(entry->d_name, find_path[i], strlen(find_path[i])) )
+            return 1;
+    }
 
-    if ( !strncmp(entry->d_name, MATCH_SERIAL_STR2, sizeof MATCH_SERIAL_STR2 - 1) )
-        return 1;
     return 0;
 }
 
