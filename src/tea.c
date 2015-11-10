@@ -47,6 +47,7 @@ void usage()
             "--version:             Show version\n"
             "--help|-h:             Help info\n"
             "--device|-d:           Open this serial port. If no, try to open one automatically.\n"
+            "--speed|-s:            Serial port speed. Default is 115200\n"
     );
 
 }
@@ -61,6 +62,8 @@ int main(int argc, char *argv[])
 
     int version = 0;
     char *device = NULL;
+    speed_t speed = 0;
+    int need_to_apply = 0;
 
     struct terminal *tm;
     struct aev_loop loop;
@@ -71,13 +74,14 @@ int main(int argc, char *argv[])
         {"version", no_argument,       &version, 1},
         {"help",    no_argument,       0, 'h'},
         {"device",  required_argument, 0, 'd'},
+        {"speed",   required_argument, 0, 's'},
         {0, 0, 0, 0}
     };
 
 
     while (1) {
 
-         c = getopt_long (argc, argv, "hd:",
+         c = getopt_long (argc, argv, "hd:s:",
                           long_options, &option_index);
 
         /* Detect the end of the options. */
@@ -95,6 +99,14 @@ int main(int argc, char *argv[])
 
         case 'd':
         device = optarg;
+        break;
+
+        case 's':
+        speed = baudrate_to_speed(atoi(optarg));
+        if ( speed == 0 ) {
+            fprintf(stderr, "Illegal baudrate\n");
+            exit(1);
+        }
         break;
 
         default:
@@ -126,6 +138,14 @@ int main(int argc, char *argv[])
 
         exit(1);
     }
+
+    if (speed) {
+        serial_setup_speed(ser, speed);
+        need_to_apply ++;
+    }
+
+    if (need_to_apply)
+        serial_apply_termios(ser);
 
     fprintf(stderr, "Serial port %s is connected\n", ser->path);
     fprintf(stderr, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
