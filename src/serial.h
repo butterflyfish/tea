@@ -91,5 +91,13 @@ show_serial_setup(struct serial *ser, int fd);
 speed_t
 baudrate_to_speed(int baudrate);
 
+/* update speed, but not apply to serial port */
+int
+serial_setup_speed(struct serial *ser, speed_t speed);
+
+/* apply termios identified by ser->attr to serial port */
+int
+serial_apply_termios(struct serial *ser);
+
 #endif
 

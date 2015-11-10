@@ -341,3 +341,15 @@ show_serial_setup(struct serial *ser, int fd)
 
     write(fd, buf, len);
 }
+
+int
+serial_setup_speed(struct serial *ser, speed_t speed) {
+
+    return cfsetspeed(&ser->attr, speed);
+}
+
+int
+serial_apply_termios(struct serial *ser) {
+
+    return tcsetattr(ser->fd, TCSAFLUSH, &ser->attr);
+}
