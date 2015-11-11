@@ -68,12 +68,16 @@ cmd_speed(struct terminal *tm, int argc, char **argv);
 static int
 cmd_list(struct terminal *tm, int argc, char **argv);
 
+static int
+cmd_csize(struct terminal *tm, int argc, char **argv);
+
 struct command cmdtbl[] = {
 
     {"quit",    cmd_quit, "",   "Exit Tea!"},
     {"help",    cmd_help,   "",  "Display what you are seeing"},
     {"show",    cmd_show,   "",  "Show current configuration"},
     {"speed",   cmd_speed,   "<baudrate>",  "Change baudrate,.e.g 115200"},
+    {"csize",   cmd_csize,   "<csize>",  "Change number of data bits,.e.g 7"},
     {"list",    cmd_list,   "",  "List serial port"},
     {"ks",      cmd_kermit_send, "<file>", "Send file using Kermit"},
     {"xs",      cmd_ymodem_send, "<file>", "Send file using Xmodem. Data size is 128B"},
@@ -168,6 +172,25 @@ cmd_speed(struct terminal *tm, int argc, char **argv){
     }
 
     serial_setup_speed(tm->ser, speed);
+    serial_apply_termios(tm->ser);
+
+    return 0;
+}
+
+static int
+cmd_csize(struct terminal *tm, int argc, char **argv){
+
+    int cs;
+
+    if ( argc != 2 )
+        return -1;
+
+    cs = atoi(argv[1]);
+    if ( serial_setup_csize(tm->ser, cs) < 0 ) {
+        fprintf(stderr, "illegal csize \x1b[33m%s\x1b[0m\n", argv[1]);
+        return 0;
+    }
+
     serial_apply_termios(tm->ser);
 
     return 0;
