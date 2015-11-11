@@ -360,6 +360,26 @@ serial_setup_speed(struct serial *ser, speed_t speed) {
 }
 
 int
+serial_setup_csize(struct serial *ser, int number){
+    int cs;
+
+    if ( number < 5 || number > 8 )
+        return -1;
+
+    switch(number) {
+        case 5: cs=CS5;break;
+        case 6: cs=CS6;break;
+        case 7: cs=CS7;break;
+        case 8: cs=CS8;break;
+    }
+
+    ser->attr.c_cflag &=  ~CSIZE;
+    ser->attr.c_cflag |=  cs;
+
+    return 0;
+}
+
+int
 serial_apply_termios(struct serial *ser) {
 
     return tcsetattr(ser->fd, TCSAFLUSH, &ser->attr);

@@ -99,6 +99,10 @@ baudrate_to_speed(int baudrate);
 int
 serial_setup_speed(struct serial *ser, speed_t speed);
 
+/* change number of data bits */
+int
+serial_setup_csize(struct serial *ser, int number);
+
 /* apply termios identified by ser->attr to serial port */
 int
 serial_apply_termios(struct serial *ser);
