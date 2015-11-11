@@ -48,6 +48,7 @@ void usage()
             "--help|-h:             Help info\n"
             "--device|-d:           Serial port name or path. If no, try to open one automatically\n"
             "--speed|-s:            Serial port speed. Default is 115200\n"
+            "--bits|-b:             The number of data bits. Default is 8\n"
     );
 
 }
@@ -64,6 +65,7 @@ int main(int argc, char *argv[])
     char *device = NULL;
     speed_t speed = 0;
     int need_to_apply = 0;
+    int cs = 0;
 
     struct terminal *tm;
     struct aev_loop loop;
@@ -75,13 +77,14 @@ int main(int argc, char *argv[])
         {"help",    no_argument,       0, 'h'},
         {"device",  required_argument, 0, 'd'},
         {"speed",   required_argument, 0, 's'},
+        {"bits",   required_argument, 0, 'b'},
         {0, 0, 0, 0}
     };
 
 
     while (1) {
 
-         c = getopt_long (argc, argv, "hd:s:",
+         c = getopt_long (argc, argv, "hd:s:b:",
                           long_options, &option_index);
 
         /* Detect the end of the options. */
@@ -107,6 +110,10 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Illegal baudrate\n");
             exit(1);
         }
+        break;
+
+        case 'b':
+        cs = atoi(optarg);
         break;
 
         default:
@@ -142,6 +149,16 @@ int main(int argc, char *argv[])
     if (speed) {
         serial_setup_speed(ser, speed);
         need_to_apply ++;
+    }
+
+    if (cs) {
+        if (serial_setup_csize(ser, cs) < 0 ) {
+            fprintf(stderr, "number of data bits is illegal\n");
+            close_serial(fd);
+            exit(0);
+        }
+        else
+            need_to_apply ++;
     }
 
     if (need_to_apply)
