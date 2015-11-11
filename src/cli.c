@@ -39,6 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "kermit_io.h"
 #include "xymodem.h"
 #include "cli.h"
+#include "serial.h"
 
 
 static struct termios termios_origin;
@@ -61,11 +62,15 @@ cmd_ymodem_send(struct terminal *tm, int argc, char **argv);
 static int
 cmd_show(struct terminal *tm, int argc, char **argv);
 
+static int
+cmd_speed(struct terminal *tm, int argc, char **argv);
+
 struct command cmdtbl[] = {
 
     {"quit",    cmd_quit, "",   "Exit Tea!"},
     {"help",    cmd_help,   "",  "Display what you are seeing"},
     {"show",    cmd_show,   "",  "Show current configuration"},
+    {"speed",   cmd_speed,   "<baudrate>",  "Change baudrate,.e.g 115200"},
     {"ks",      cmd_kermit_send, "<file>", "Send file using Kermit"},
     {"xs",      cmd_ymodem_send, "<file>", "Send file using Xmodem. Data size is 128B"},
     {"ys",      cmd_ymodem_send, "<file>", "Send file using Ymodem. Data size is 1024B"},
@@ -134,6 +139,26 @@ static int
 cmd_show(struct terminal *tm, int argc, char **argv){
 
     show_serial_setup(tm->ser, tm->ofd);
+    return 0;
+}
+
+static int
+cmd_speed(struct terminal *tm, int argc, char **argv){
+
+    speed_t speed;
+
+    if ( argc != 2 )
+        return -1;
+
+    speed = baudrate_to_speed(atoi(argv[1]));
+    if ( speed == 0 ) {
+        fprintf(stderr, "illegal baudrate \x1b[33m%s\x1b[0m\n", argv[1]);
+        return 0;
+    }
+
+    serial_setup_speed(tm->ser, speed);
+    serial_apply_termios(tm->ser);
+
     return 0;
 }
 
