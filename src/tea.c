@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
     if (need_to_apply)
         serial_apply_termios(ser);
 
-    fprintf(stderr, "Serial port %s is connected\n", ser->path);
+    fprintf(stderr, "Serial port %s is connected\n", ser->name);
     fprintf(stderr, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
 
     aev_loop_init(&loop);

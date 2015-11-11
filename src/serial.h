@@ -40,7 +40,7 @@ struct serial {
     struct termios attr;
 
     int fd;
-    char path[100];
+    char name[50];
     SLIST_ENTRY(serial) node;
 };
 
@@ -74,6 +74,10 @@ close_serial(int fd);
 
 void
 close_all_serials(void);
+
+/* list serial port to fd */
+void
+list_serial_port(struct serial *ser, int fd);
 
 /*
  * show setup information of serial port

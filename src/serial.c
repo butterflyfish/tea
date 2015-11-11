@@ -63,7 +63,7 @@ static struct {
 };
 
 
-static char * find_path[] = {
+static char * match_name[] = {
     "tty.usbserial",
     "ttyS"
     "ttyUSB"
@@ -75,8 +75,8 @@ match_serial(const struct dirent *entry)
 {
     int i;
 
-    for (i=0; i < sizeof(find_path)/sizeof(find_path[0]); i++) {
-        if ( !strncmp(entry->d_name, find_path[i], strlen(find_path[i])) )
+    for (i=0; i < sizeof(match_name)/sizeof(match_name[0]); i++) {
+        if ( !strncmp(entry->d_name, match_name[i], strlen(match_name[i])) )
             return 1;
     }
 
@@ -92,7 +92,7 @@ add_serial(const char *name)
     struct serial *serial;
 
     serial = malloc(sizeof *serial);
-    sprintf(serial->path,"/dev/%s",name);
+    strncpy(serial->name, name, sizeof(serial->name));
     SLIST_INSERT_HEAD(&serial_head, serial, node);
 
     return 0;
@@ -189,7 +189,7 @@ open_serial(char *name, struct serial **ser)
     }
 
     SLIST_FOREACH(serial, &serial_head, node){
-        if (strstr(serial->path, name)){
+        if (strstr(name, serial->name)){
                 serial->fd = fd;
                 attr = &serial->attr;
                 break;
@@ -242,7 +242,7 @@ open_one_idle_serial( struct serial **ser )
 
     SLIST_FOREACH(serial, &serial_head, node) {
 
-        ret = open_serial(serial->path, ser);
+        ret = open_serial(serial->name, ser);
         if ( ret < 0 ) {
             return ret;
         }
@@ -265,6 +265,17 @@ close_all_serials(void)
     SLIST_FOREACH(serial, &serial_head, node){
         close_serial(serial->fd);
     }
+}
+
+void
+list_serial_port(struct serial *ser, int fd) {
+
+    struct serial *serial;
+
+    SLIST_FOREACH(serial, &serial_head, node){
+        write(fd, serial->name, strlen(serial->name));
+    }
+    write(fd, "\n", 1);
 }
 
 static int
