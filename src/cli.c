@@ -41,49 +41,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "cli.h"
 #include "serial.h"
 
+/* cli command */
+struct command {
+
+     const char *name;
+     int (*func)(struct terminal *tm, int argc, char **argv);
+     const char *params;
+     const char *summary;
+
+};
 
 static struct termios termios_origin;
 
-static int
-cmd_quit(struct terminal *tm, int argc, char **argv);
-
-static int
-cmd_help(struct terminal *tm, int argc, char **argv);
-
-static int
-cmd_kermit_send(struct terminal *tm, int argc, char **argv);
-
-static int
-cmd_xmodem_send(struct terminal *tm, int argc, char **argv);
-
-static int
-cmd_ymodem_send(struct terminal *tm, int argc, char **argv);
-
-static int
-cmd_show(struct terminal *tm, int argc, char **argv);
-
-static int
-cmd_speed(struct terminal *tm, int argc, char **argv);
-
-static int
-cmd_list(struct terminal *tm, int argc, char **argv);
-
-static int
-cmd_csize(struct terminal *tm, int argc, char **argv);
-
-struct command cmdtbl[] = {
-
-    {"quit",    cmd_quit, "",   "Exit Tea!"},
-    {"help",    cmd_help,   "",  "Display what you are seeing"},
-    {"show",    cmd_show,   "",  "Show current configuration"},
-    {"speed",   cmd_speed,   "<baudrate>",  "Change baudrate,.e.g 115200"},
-    {"csize",   cmd_csize,   "<csize>",  "Change number of data bits,.e.g 7"},
-    {"list",    cmd_list,   "",  "List serial port"},
-    {"ks",      cmd_kermit_send, "<file>", "Send file using Kermit"},
-    {"xs",      cmd_ymodem_send, "<file>", "Send file using Xmodem. Data size is 128B"},
-    {"ys",      cmd_ymodem_send, "<file>", "Send file using Ymodem. Data size is 1024B"},
-    {NULL, NULL, NULL}
-};
+struct command cmdtbl[];
 
 
 static int
@@ -319,3 +289,19 @@ cli_loop(struct terminal *tm)
     enable_raw_mode(tm);
     fcntl(tm->ifd, F_SETFL, fcntl(tm->ifd, F_GETFL, 0) | O_NONBLOCK);
 }
+
+struct command cmdtbl[] = {
+
+    {"quit",    cmd_quit, "",   "Exit Tea!"},
+    {"help",    cmd_help,   "",  "Display what you are seeing"},
+    {"show",    cmd_show,   "",  "Show current configuration"},
+    {"speed",   cmd_speed,   "<baudrate>",  "Change baudrate,.e.g 115200"},
+    {"csize",   cmd_csize,   "<csize>",  "Change number of data bits,.e.g 7"},
+    {"list",    cmd_list,   "",  "List serial port"},
+    {"ks",      cmd_kermit_send, "<file>", "Send file using Kermit"},
+    {"xs",      cmd_ymodem_send, "<file>", "Send file using Xmodem. Data size is 128B"},
+    {"ys",      cmd_ymodem_send, "<file>", "Send file using Ymodem. Data size is 1024B"},
+    {NULL, NULL, NULL}
+};
+
+

@@ -33,16 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "terminal.h"
 
-/* cli command */
-struct command {
-
-     const char *name;
-     int (*func)(struct terminal *tm, int argc, char **argv);
-     const char *params;
-     const char *summary;
-
-};
-
 /*
  * enable raw mode for controlling tty @ifd
  */
