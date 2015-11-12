@@ -39,10 +39,6 @@ struct terminal {
 
     struct serial *ser;
 
-    /* represent controlling tty */
-    int ifd;     /* read from this fd */
-    int ofd;     /* write to this fd */
-
     aev_io ser_w;   /* serial port watcher */
     aev_io tty_w;   /* controling tty watcher */
     struct aev_loop *loop;
@@ -50,7 +46,7 @@ struct terminal {
 
 /* create a new terminal */
 struct terminal *
-new_terminal(struct aev_loop *loop, struct serial *ser, int ifd, int ofd);
+new_terminal(struct aev_loop *loop, struct serial *ser);
 
 /* connect new serial */
 void

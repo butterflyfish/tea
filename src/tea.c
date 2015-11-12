@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
 
     aev_loop_init(&loop);
-    tm = new_terminal(&loop, ser, 0, 1);
+    tm = new_terminal(&loop, ser);
     aev_run(&loop);
     delete_terminal(tm);
 

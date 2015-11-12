@@ -54,7 +54,7 @@ ser_read (struct aev_loop *loop, aev_io *w, int evmask)
         aev_io_stop(loop, &tm->tty_w);
         disable_raw_mode(tm);
     }
-    write(tm->ofd, buf, len);
+    write(STDOUT_FILENO, buf, len);
 }
 
 /* read from controlling tty and then write to serial port */
@@ -65,7 +65,7 @@ tty_read (struct aev_loop *loop, aev_io *w, int evmask)
     unsigned char buf;
     struct terminal *tm = w->data;
 
-    len = read(tm->ifd, &buf, 1);
+    len = read(STDIN_FILENO, &buf, 1);
 
     /* map DEL to Backspace */
     if (buf == 127)
@@ -83,16 +83,14 @@ tty_read (struct aev_loop *loop, aev_io *w, int evmask)
 }
 
 struct terminal *
-new_terminal(struct aev_loop *loop, struct serial *ser, int ifd, int ofd)
+new_terminal(struct aev_loop *loop, struct serial *ser)
 {
     struct terminal *tm;
 
     tm = malloc( sizeof *tm);
-    tm->ifd = ifd;
-    tm->ofd = ofd;
 
     tm->loop = loop;
-    aev_io_init(&tm->tty_w, ifd, tty_read,  AEV_READ, tm);
+    aev_io_init(&tm->tty_w, STDIN_FILENO, tty_read,  AEV_READ, tm);
     aev_io_start(loop, &tm->tty_w);
 
     if ( ser ) {
@@ -113,24 +111,21 @@ new_terminal(struct aev_loop *loop, struct serial *ser, int ifd, int ofd)
 void terminal_connect_serial(struct terminal *tm, char *name){
     struct serial *ser = NULL;
     int ret;
-    char buf[100];
-    int len;
 
     ret = open_serial(name, &ser);
     if ( ret < 0 )
     {
         switch (ret) {
             case -ENOENT:
-                len = sprintf(buf, "No serial port!\n");
+                fprintf(stderr, "No serial port!\n");
                 break;
             case -EBUSY:
-                len = sprintf(buf, "Serial ports are busy!\n");
+                fprintf(stderr, "Serial ports are busy!\n");
                 break;
             default:
-               len =  sprintf(buf, "%s\n", strerror(errno));
+                fprintf(stderr, "%s\n", strerror(errno));
                 break;
         }
-        write(tm->ofd, buf, len);
         return;
     }
 

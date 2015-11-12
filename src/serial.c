@@ -268,14 +268,13 @@ close_all_serials(void)
 }
 
 void
-list_serial_port(struct serial *ser, int fd) {
+list_serial_port(struct serial *ser) {
 
     struct serial *serial;
 
     SLIST_FOREACH(serial, &serial_head, node){
-        write(fd, serial->name, strlen(serial->name));
+        printf("%s\n", serial->name);
     }
-    write(fd, "\n", 1);
 }
 
 static int
@@ -306,21 +305,18 @@ baudrate_to_speed(int baudrate)
  * show setup information of serial port
  * its output like utility stty
  *
- * @fd: where to write setup info
  * @ser: point to serial port
  */
 void
-show_serial_setup(struct serial *ser, int fd)
+show_serial_setup(struct serial *ser)
 {
     struct termios *tms = &ser->attr;
-    char buf[1024];
-    int len = 0;
     int ret;
     int baudrate;
     int csize;
 
     baudrate = speed_to_baudrate(cfgetispeed(tms));
-    len += sprintf(buf+len, "Baudrate: %d\n", baudrate);
+    printf("Baudrate: %d\n", baudrate);
 
     /* the number of data bits */
     switch( CSIZE & tms->c_cflag) {
@@ -329,28 +325,26 @@ show_serial_setup(struct serial *ser, int fd)
         case CS6: csize = 6; break;
         case CS5: csize = 5; break;
     }
-    len += sprintf(buf+len, "Number of data bits: %d\n", csize);
+    printf("Number of data bits: %d\n", csize);
 
     /* stop bits: 1 or 2 */
-    len += sprintf(buf+len, "Stop bits: %d\n", CSTOPB & tms->c_cflag ? 2:1);
+    printf("Stop bits: %d\n", CSTOPB & tms->c_cflag ? 2:1);
 
     /* partiy check */
-    len += sprintf(buf+len, "Parity: ");
+    printf("Parity: ");
     if ( !(PARENB & tms->c_cflag) )
-        len += sprintf(buf+len, "Disabled\n");
+        printf("Disabled\n");
     else if (PARODD & tms->c_cflag )
-        len += sprintf(buf+len, "odd\n");
+        printf("odd\n");
     else
-        len += sprintf(buf+len, "even\n");
+        printf("even\n");
 
     /* flow control */
-    len += sprintf(buf+len, "Flow control: ");
+    printf("Flow control: ");
     if ((IXON & tms->c_iflag) && (IXOFF & tms->c_iflag))
-        len += sprintf(buf+len, "Xon\n");
+        printf("Xon\n");
     else
-        len += sprintf(buf+len, "Disabled\n");
-
-    write(fd, buf, len);
+        printf("Disabled\n");
 }
 
 int

@@ -77,17 +77,16 @@ close_all_serials(void);
 
 /* list serial port to fd */
 void
-list_serial_port(struct serial *ser, int fd);
+list_serial_port(struct serial *ser);
 
 /*
  * show setup information of serial port
  * its output like utility stty
  *
- * @fd: where to write setup info
  * @ser: point to serial port
  */
 void
-show_serial_setup(struct serial *ser, int fd);
+show_serial_setup(struct serial *ser);
 
 /* translate literal baudrate to speed_t
  * @baudrate: literal baudrate,e.g. 115200

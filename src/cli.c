@@ -116,14 +116,14 @@ cmd_xmodem_send(struct terminal *tm, int argc, char **argv){
 static int
 cmd_show(struct terminal *tm, int argc, char **argv){
 
-    show_serial_setup(tm->ser, tm->ofd);
+    show_serial_setup(tm->ser);
     return 0;
 }
 
 static int
 cmd_list(struct terminal *tm, int argc, char **argv){
 
-    list_serial_port(tm->ser, tm->ofd);
+    list_serial_port(tm->ser);
     return 0;
 }
 
@@ -243,10 +243,10 @@ int
 enable_raw_mode(struct terminal *tm)
 {
     struct termios raw;
-    if ( !isatty(tm->ifd) )
+    if ( !isatty(STDIN_FILENO) )
         return -1;
 
-    tcgetattr(tm->ifd, &termios_origin);
+    tcgetattr(STDIN_FILENO, &termios_origin);
     raw = termios_origin;
 
     raw.c_oflag = 0;
@@ -271,7 +271,7 @@ enable_raw_mode(struct terminal *tm)
     raw.c_cc[VLNEXT] = _POSIX_VDISABLE;
     raw.c_cc[VDISCARD] = _POSIX_VDISABLE;
 
-    tcsetattr(tm->ifd, TCSAFLUSH, &raw);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 
     return 0;
 }
@@ -279,7 +279,7 @@ enable_raw_mode(struct terminal *tm)
 void
 disable_raw_mode(struct terminal *tm)
 {
-    tcsetattr(tm->ifd, TCSAFLUSH, &termios_origin);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &termios_origin);
 }
 
 /*
@@ -291,20 +291,20 @@ cli_loop(struct terminal *tm)
     char buf[1024];
     int len;
 
-    fcntl(tm->ifd, F_SETFL, fcntl(tm->ifd, F_GETFL, 0) & ~O_NONBLOCK);
+    fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL, 0) & ~O_NONBLOCK);
 
     disable_raw_mode(tm);
 
-    write(tm->ofd, "\n", sizeof "\n");
+    putchar('\n');
 
     /* green color */
     fprintf(stderr, "\n\033[1;32mPress Enter to resume the connection,type help get command list.\033[0m\n");
 
     while(1)
     {
-        write(tm->ofd, "Tea> ", sizeof "Tea> ");
+        write(STDOUT_FILENO, "Tea> ", sizeof "Tea> ");
 
-        len = read(tm->ifd, buf, sizeof buf);
+        len = read(STDIN_FILENO, buf, sizeof buf);
         buf[len] = 0;
 
         /* to jump out setup */
@@ -317,7 +317,7 @@ cli_loop(struct terminal *tm)
     }
 
     enable_raw_mode(tm);
-    fcntl(tm->ifd, F_SETFL, fcntl(tm->ifd, F_GETFL, 0) | O_NONBLOCK);
+    fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL, 0) | O_NONBLOCK);
 }
 
 struct command cmdtbl[] = {
