@@ -166,6 +166,25 @@ cmd_csize(struct terminal *tm, int argc, char **argv){
     return 0;
 }
 
+static int
+cmd_stopbits(struct terminal *tm, int argc, char **argv){
+
+    int stopbits;
+
+    if ( argc != 2 )
+        return -1;
+
+    stopbits = atoi(argv[1]);
+    if ( serial_setup_stopbits(tm->ser, stopbits) < 0 ) {
+        fprintf(stderr, "illegal stopbits \x1b[33m%s\x1b[0m\n", argv[1]);
+        return 0;
+    }
+
+    serial_apply_termios(tm->ser);
+
+    return 0;
+}
+
 static void
 cli_exec(struct terminal *tm, char *buf) {
 
@@ -295,9 +314,10 @@ struct command cmdtbl[] = {
     {"quit",    cmd_quit, "",   "Exit Tea!"},
     {"help",    cmd_help,   "",  "Display what you are seeing"},
     {"show",    cmd_show,   "",  "Show current configuration"},
-    {"speed",   cmd_speed,   "<baudrate>",  "Change baudrate,.e.g 115200"},
-    {"csize",   cmd_csize,   "<csize>",  "Change number of data bits,.e.g 7"},
     {"list",    cmd_list,   "",  "List serial port"},
+    {"speed",   cmd_speed,   "<baudrate>",  "Change baudrate,.e.g 115200"},
+    {"csize",   cmd_csize,   "<csize>",  "Change number of data bit,.e.g 7"},
+    {"stopbits",   cmd_stopbits,   "<stopbits>",  "Change number of stop bit"},
     {"ks",      cmd_kermit_send, "<file>", "Send file using Kermit"},
     {"xs",      cmd_ymodem_send, "<file>", "Send file using Xmodem. Data size is 128B"},
     {"ys",      cmd_ymodem_send, "<file>", "Send file using Ymodem. Data size is 1024B"},
