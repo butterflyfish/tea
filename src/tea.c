@@ -49,6 +49,7 @@ void usage()
             "--device|-d:           Serial port name or path. If no, try to open one automatically\n"
             "--speed|-s:            Serial port speed. Default is 115200\n"
             "--bits|-b:             The number of data bits. Default is 8\n"
+            "--stopbits|-t:         The number of stop bit. Default is 1\n"
     );
 
 }
@@ -66,6 +67,7 @@ int main(int argc, char *argv[])
     speed_t speed = 0;
     int need_to_apply = 0;
     int cs = 0;
+    int stopbits = 0;
 
     struct terminal *tm;
     struct aev_loop loop;
@@ -78,13 +80,14 @@ int main(int argc, char *argv[])
         {"device",  required_argument, 0, 'd'},
         {"speed",   required_argument, 0, 's'},
         {"bits",   required_argument, 0, 'b'},
+        {"stopbits",   required_argument, 0, 't'},
         {0, 0, 0, 0}
     };
 
 
     while (1) {
 
-         c = getopt_long (argc, argv, "hd:s:b:",
+         c = getopt_long (argc, argv, "hd:s:b:t:",
                           long_options, &option_index);
 
         /* Detect the end of the options. */
@@ -114,6 +117,10 @@ int main(int argc, char *argv[])
 
         case 'b':
         cs = atoi(optarg);
+        break;
+
+        case 't':
+        stopbits = atoi(optarg);
         break;
 
         default:
@@ -157,8 +164,16 @@ int main(int argc, char *argv[])
             close_serial(fd);
             exit(0);
         }
-        else
-            need_to_apply ++;
+        need_to_apply ++;
+    }
+
+    if (stopbits) {
+        if (serial_setup_stopbits(ser, stopbits) < 0 ) {
+            fprintf(stderr, "number of stop bits is illegal\n");
+            close_serial(fd);
+            exit(0);
+        }
+        need_to_apply ++;
     }
 
     if (need_to_apply)
