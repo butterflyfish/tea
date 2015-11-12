@@ -45,11 +45,16 @@ struct terminal {
 
     aev_io ser_w;   /* serial port watcher */
     aev_io tty_w;   /* controling tty watcher */
+    struct aev_loop *loop;
 };
 
 /* create a new terminal */
 struct terminal *
 new_terminal(struct aev_loop *loop, struct serial *ser, int ifd, int ofd);
+
+/* connect new serial */
+void
+terminal_connect_serial(struct terminal *tm, char *name);
 
 /* free a new terminal created by new_terminal */
 void
