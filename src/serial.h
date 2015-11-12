@@ -103,6 +103,10 @@ serial_setup_speed(struct serial *ser, speed_t speed);
 int
 serial_setup_csize(struct serial *ser, int number);
 
+/* change number of stopbits */
+int
+serial_setup_stopbits(struct serial *ser, int number);
+
 /* apply termios identified by ser->attr to serial port */
 int
 serial_apply_termios(struct serial *ser);

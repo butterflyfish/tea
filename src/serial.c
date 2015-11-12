@@ -380,6 +380,20 @@ serial_setup_csize(struct serial *ser, int number){
 }
 
 int
+serial_setup_stopbits(struct serial *ser, int number){
+
+    if ( number !=1 && number != 2 )
+        return -1;
+
+    if ( number == 1)
+        ser->attr.c_cflag &= ~CSTOPB;
+    else
+        ser->attr.c_cflag |= CSTOPB;
+
+    return 0;
+}
+
+int
 serial_apply_termios(struct serial *ser) {
 
     return tcsetattr(ser->fd, TCSAFLUSH, &ser->attr);
