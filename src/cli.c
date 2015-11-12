@@ -128,6 +128,17 @@ cmd_list(struct terminal *tm, int argc, char **argv){
 }
 
 static int
+cmd_connect(struct terminal *tm, int argc, char **argv){
+
+    if ( argc != 2 )
+        return -1;
+
+    terminal_connect_serial(tm, argv[1]);
+
+    return 0;
+}
+
+static int
 cmd_speed(struct terminal *tm, int argc, char **argv){
 
     speed_t speed;
@@ -315,6 +326,7 @@ struct command cmdtbl[] = {
     {"help",    cmd_help,   "",  "Display what you are seeing"},
     {"show",    cmd_show,   "",  "Show current configuration"},
     {"list",    cmd_list,   "",  "List serial port"},
+    {"connect",    cmd_connect,   "<serial port name>",  "Connect serial port"},
     {"speed",   cmd_speed,   "<baudrate>",  "Change baudrate,.e.g 115200"},
     {"csize",   cmd_csize,   "<csize>",  "Change number of data bit,.e.g 7"},
     {"stopbits",   cmd_stopbits,   "<stopbits>",  "Change number of stop bit"},
