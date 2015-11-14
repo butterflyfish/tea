@@ -241,11 +241,9 @@ open_one_idle_serial( struct serial **ser )
     int ret = 0;
 
     SLIST_FOREACH(serial, &serial_head, node) {
-
         ret = open_serial(serial->name, ser);
-        if ( ret < 0 ) {
-            return ret;
-        }
+        if ( 0 == ret )
+            return 0;
     }
     return ret;
 }
