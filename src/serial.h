@@ -44,6 +44,14 @@ struct serial {
     SLIST_ENTRY(serial) node;
 };
 
+
+enum ser_parity {
+
+    SER_PARITY_NONE = 0,
+    SER_PARITY_ODD  = 1,
+    SER_PARITY_EVEN = 2,
+};
+
 /*
  * scan serial port
  *
@@ -105,6 +113,10 @@ serial_setup_csize(struct serial *ser, int number);
 /* change number of stopbits */
 int
 serial_setup_stopbits(struct serial *ser, int number);
+
+/* configure parity type */
+int
+serial_setup_parity(struct serial *ser, enum ser_parity p);
 
 /* apply termios identified by ser->attr to serial port */
 int

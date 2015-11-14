@@ -333,7 +333,7 @@ show_serial_setup(struct serial *ser)
     /* partiy check */
     printf("Parity: ");
     if ( !(PARENB & tms->c_cflag) )
-        printf("Disabled\n");
+        printf("none\n");
     else if (PARODD & tms->c_cflag )
         printf("odd\n");
     else
@@ -384,6 +384,31 @@ serial_setup_stopbits(struct serial *ser, int number){
     else
         ser->attr.c_cflag |= CSTOPB;
 
+    return 0;
+}
+
+int
+serial_setup_parity(struct serial *ser, enum ser_parity p) {
+
+    struct termios *tms = &ser->attr;
+
+    switch (p) {
+
+        case SER_PARITY_NONE:
+            tms->c_cflag &= ~PARENB;
+            break;
+
+        case SER_PARITY_ODD:
+            tms->c_cflag |= PARENB|PARODD;
+            break;
+
+        case SER_PARITY_EVEN:
+            tms->c_cflag &= ~PARODD;
+            tms->c_cflag |= PARENB;
+            break;
+
+        default: return -1;
+    }
     return 0;
 }
 
