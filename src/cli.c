@@ -221,6 +221,30 @@ cmd_parity(struct terminal *tm, int argc, char **argv){
     return 0;
 }
 
+static int
+cmd_flow(struct terminal *tm, int argc, char **argv){
+
+    enum ser_flow_ctrl flow;
+
+    if ( argc != 2 )
+        return -1;
+
+    if (0 == strcmp(argv[1], "xon"))
+        flow = SER_FLOW_XON;
+    else if (0 == strcmp(argv[1], "none"))
+        flow = SER_FLOW_NONE;
+    else {
+        fprintf(stderr, "illegal flow control type \x1b[33m%s\x1b[0m\n", argv[1]);
+        return 0;
+    }
+
+    serial_setup_flowctrl(tm->ser, flow);
+    serial_apply_termios(tm->ser);
+
+    return 0;
+}
+
+
 static void
 cli_exec(struct terminal *tm, char *buf) {
 
@@ -351,11 +375,12 @@ struct command cmdtbl[] = {
     {"help",    cmd_help,   "",  "Display what you are seeing"},
     {"show",    cmd_show,   "",  "Show current configuration"},
     {"list",    cmd_list,   "",  "List serial port"},
-    {"connect",    cmd_connect,   "<serial port name>",  "Connect serial port"},
+    {"connect", cmd_connect,   "<serial port name>",  "Connect serial port"},
     {"speed",   cmd_speed,   "<baudrate>",  "Change baudrate,.e.g 115200"},
     {"csize",   cmd_csize,   "<csize>",  "Change number of data bit,.e.g 7"},
-    {"stopbits",   cmd_stopbits,   "<stopbits>",  "Change number of stop bit"},
-    {"parity",   cmd_parity,   "<parity type>",  "Change parity type to none|even|odd"},
+    {"stopbits",cmd_stopbits,   "<stopbits>",  "Change number of stop bit"},
+    {"parity",  cmd_parity,   "<parity type>",  "Change parity type to none|even|odd"},
+    {"flow",    cmd_flow,   "<flow type>",  "Change flow type to none|xon"},
     {"ks",      cmd_kermit_send, "<file>", "Send file using Kermit"},
     {"xs",      cmd_ymodem_send, "<file>", "Send file using Xmodem. Data size is 128B"},
     {"ys",      cmd_ymodem_send, "<file>", "Send file using Ymodem. Data size is 1024B"},
