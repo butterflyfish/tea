@@ -51,6 +51,7 @@ void usage()
             "--bits|-b <5|6|7|8>:      The number of data bits. Default is 8\n"
             "--stopbits|-t <1|2>:      The number of stop bit. Default is 1\n"
             "--parity|-p <odd|even>:   Parity setting. Default is none\n"
+            "--flow|-f <xon>:          Flow control type. Default is none\n"
     );
 
 }
@@ -70,6 +71,7 @@ int main(int argc, char *argv[])
     int cs = 0;
     int stopbits = 0;
     enum ser_parity p = SER_PARITY_NONE;
+    enum ser_flow_ctrl flow = SER_FLOW_NONE;
 
     struct terminal *tm;
     struct aev_loop loop;
@@ -84,13 +86,14 @@ int main(int argc, char *argv[])
         {"bits",   required_argument, 0, 'b'},
         {"stopbits",   required_argument, 0, 't'},
         {"parity",   required_argument, 0, 'p'},
+        {"flow",   required_argument, 0, 'f'},
         {0, 0, 0, 0}
     };
 
 
     while (1) {
 
-         c = getopt_long (argc, argv, "hd:s:b:t:p:",
+         c = getopt_long (argc, argv, "hd:s:b:t:p:f:",
                           long_options, &option_index);
 
         /* Detect the end of the options. */
@@ -135,6 +138,17 @@ int main(int argc, char *argv[])
 
             fprintf(stderr, "parity type is illegal\n");
             exit(1);
+        }
+        break;
+
+        case 'f':
+        if (0 == strcmp(optarg, "xon"))
+            flow = SER_FLOW_XON;
+        else if (0 == strcmp(optarg, "none"))
+            flow = SER_FLOW_NONE;
+        else {
+                fprintf(stderr, "flow control type is illegal\n");
+            return 0;
         }
         break;
 
@@ -193,6 +207,11 @@ int main(int argc, char *argv[])
 
     if ( p != SER_PARITY_NONE ) {
         serial_setup_parity(ser, p);
+        need_to_apply ++;
+    }
+
+    if ( flow != SER_FLOW_NONE ) {
+        serial_setup_flowctrl(ser, flow);
         need_to_apply ++;
     }
 
