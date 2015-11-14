@@ -378,7 +378,7 @@ struct command cmdtbl[] = {
     {"connect", cmd_connect,   "<serial port name>",  "Connect serial port"},
     {"speed",   cmd_speed,   "<baudrate>",  "Change baudrate,.e.g 115200"},
     {"csize",   cmd_csize,   "<csize>",  "Change number of data bit,.e.g 7"},
-    {"stopbits",cmd_stopbits,   "<stopbits>",  "Change number of stop bit"},
+    {"stopbits",cmd_stopbits,   "<stopbits>",  "Change number of stop bit to 1 or 2"},
     {"parity",  cmd_parity,   "<parity type>",  "Change parity type to none|even|odd"},
     {"flow",    cmd_flow,   "<flow type>",  "Change flow type to none|xon"},
     {"ks",      cmd_kermit_send, "<file>", "Send file using Kermit"},
