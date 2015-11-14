@@ -344,7 +344,7 @@ show_serial_setup(struct serial *ser)
     if ((IXON & tms->c_iflag) && (IXOFF & tms->c_iflag))
         printf("Xon\n");
     else
-        printf("Disabled\n");
+        printf("none\n");
 }
 
 int
@@ -408,6 +408,25 @@ serial_setup_parity(struct serial *ser, enum ser_parity p) {
             break;
 
         default: return -1;
+    }
+    return 0;
+}
+
+int
+serial_setup_flowctrl(struct serial *ser, enum ser_flow_ctrl flow) {
+
+    struct termios *tms = &ser->attr;
+
+    switch (flow) {
+        case SER_FLOW_XON:
+            tms->c_iflag |= IXON|IXOFF;
+            break;
+        case SER_FLOW_NONE:
+            tms->c_iflag &= ~IXON;
+            tms->c_iflag &= ~IXOFF;
+            break;
+        default:
+            return -1;
     }
     return 0;
 }

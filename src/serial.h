@@ -52,6 +52,11 @@ enum ser_parity {
     SER_PARITY_EVEN = 2,
 };
 
+enum ser_flow_ctrl {
+    SER_FLOW_NONE = 0,
+    SER_FLOW_XON,
+};
+
 /*
  * scan serial port
  *
@@ -117,6 +122,10 @@ serial_setup_stopbits(struct serial *ser, int number);
 /* configure parity type */
 int
 serial_setup_parity(struct serial *ser, enum ser_parity p);
+
+/* set flow control type */
+int
+serial_setup_flowctrl(struct serial *ser, enum ser_flow_ctrl flow);
 
 /* apply termios identified by ser->attr to serial port */
 int
