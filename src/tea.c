@@ -50,6 +50,7 @@ void usage()
             "--speed|-s:               Serial port speed. Default is 115200\n"
             "--bits|-b <5|6|7|8>:      The number of data bits. Default is 8\n"
             "--stopbits|-t <1|2>:      The number of stop bit. Default is 1\n"
+            "--parity|-p <odd|even>:   Parity setting. Default is none\n"
     );
 
 }
@@ -68,6 +69,7 @@ int main(int argc, char *argv[])
     int need_to_apply = 0;
     int cs = 0;
     int stopbits = 0;
+    enum ser_parity p = SER_PARITY_NONE;
 
     struct terminal *tm;
     struct aev_loop loop;
@@ -81,13 +83,14 @@ int main(int argc, char *argv[])
         {"speed",   required_argument, 0, 's'},
         {"bits",   required_argument, 0, 'b'},
         {"stopbits",   required_argument, 0, 't'},
+        {"parity",   required_argument, 0, 'p'},
         {0, 0, 0, 0}
     };
 
 
     while (1) {
 
-         c = getopt_long (argc, argv, "hd:s:b:t:",
+         c = getopt_long (argc, argv, "hd:s:b:t:p:",
                           long_options, &option_index);
 
         /* Detect the end of the options. */
@@ -121,6 +124,18 @@ int main(int argc, char *argv[])
 
         case 't':
         stopbits = atoi(optarg);
+        break;
+
+        case 'p':
+        if (0 == strcmp(optarg, "even"))
+            p = SER_PARITY_EVEN;
+        else if (0 == strcmp(optarg, "odd"))
+            p = SER_PARITY_ODD;
+        else {
+
+            fprintf(stderr, "parity type is illegal\n");
+            exit(1);
+        }
         break;
 
         default:
@@ -173,6 +188,11 @@ int main(int argc, char *argv[])
             close_serial(fd);
             exit(0);
         }
+        need_to_apply ++;
+    }
+
+    if ( p != SER_PARITY_NONE ) {
+        serial_setup_parity(ser, p);
         need_to_apply ++;
     }
 
