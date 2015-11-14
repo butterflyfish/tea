@@ -196,6 +196,31 @@ cmd_stopbits(struct terminal *tm, int argc, char **argv){
     return 0;
 }
 
+static int
+cmd_parity(struct terminal *tm, int argc, char **argv){
+
+    enum ser_parity p;
+
+    if ( argc != 2 )
+        return -1;
+
+    if (0 == strcmp(argv[1], "even"))
+        p = SER_PARITY_EVEN;
+    else if (0 == strcmp(argv[1], "odd"))
+        p = SER_PARITY_ODD;
+    else if (0 == strcmp(argv[1], "none"))
+        p = SER_PARITY_NONE;
+    else {
+        fprintf(stderr, "illegal parity \x1b[33m%s\x1b[0m\n", argv[1]);
+        return 0;
+    }
+
+    serial_setup_parity(tm->ser, p);
+    serial_apply_termios(tm->ser);
+
+    return 0;
+}
+
 static void
 cli_exec(struct terminal *tm, char *buf) {
 
@@ -330,6 +355,7 @@ struct command cmdtbl[] = {
     {"speed",   cmd_speed,   "<baudrate>",  "Change baudrate,.e.g 115200"},
     {"csize",   cmd_csize,   "<csize>",  "Change number of data bit,.e.g 7"},
     {"stopbits",   cmd_stopbits,   "<stopbits>",  "Change number of stop bit"},
+    {"parity",   cmd_parity,   "<parity type>",  "Change parity type to none|even|odd"},
     {"ks",      cmd_kermit_send, "<file>", "Send file using Kermit"},
     {"xs",      cmd_ymodem_send, "<file>", "Send file using Xmodem. Data size is 128B"},
     {"ys",      cmd_ymodem_send, "<file>", "Send file using Ymodem. Data size is 1024B"},
