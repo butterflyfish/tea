@@ -189,7 +189,9 @@ open_serial(char *name, struct serial **ser)
     }
 
     SLIST_FOREACH(serial, &serial_head, node){
-        if (strstr(name, serial->name)){
+        if (!strncmp(name, "/dev/", 5))
+            name += 5;
+        if (!strcmp(name, serial->name)){
                 serial->fd = fd;
                 attr = &serial->attr;
                 break;
