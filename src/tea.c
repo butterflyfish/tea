@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "serial.h"
 #include "terminal.h"
 
-static char *ver = "2005.x.y";
+static char *ver = "2005.Nov.14";
 
 static
 void usage()
