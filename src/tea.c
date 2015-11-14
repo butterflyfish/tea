@@ -44,12 +44,12 @@ void usage()
 {
     fprintf(stderr,
             "Usage: tea [options]\n\n"
-            "--version:             Show version\n"
-            "--help|-h:             Help info\n"
-            "--device|-d:           Serial port name or path. If no, try to open one automatically\n"
-            "--speed|-s:            Serial port speed. Default is 115200\n"
-            "--bits|-b:             The number of data bits. Default is 8\n"
-            "--stopbits|-t:         The number of stop bit. Default is 1\n"
+            "--version:                Show version\n"
+            "--help|-h:                Help info\n"
+            "--device|-d:              Serial port name or path. If no, try to open one automatically\n"
+            "--speed|-s:               Serial port speed. Default is 115200\n"
+            "--bits|-b <5|6|7|8>:      The number of data bits. Default is 8\n"
+            "--stopbits|-t <1|2>:      The number of stop bit. Default is 1\n"
     );
 
 }
