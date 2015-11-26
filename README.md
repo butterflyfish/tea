@@ -8,6 +8,7 @@
 * exit automatically if serial ports opened are removed
 * control termial. Trigger key is Ctrl-]
 * send file via serial communication protocol: kermit,xmodem,ymodem
+* configure serial via option or terminal command
 
 
 ## How to build ?
