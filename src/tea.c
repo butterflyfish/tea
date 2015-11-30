@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "serial.h"
 #include "terminal.h"
 
-static char *ver = "2005.Nov.14";
+static char *ver = "developing";
 
 static
 void usage()
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
 
     aev_loop_init(&loop);
-    tm = new_terminal(&loop, ser);
+    tm = new_terminal(&loop, ser, 0, 1);
     aev_run(&loop);
     delete_terminal(tm);
 
