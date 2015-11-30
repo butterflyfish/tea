@@ -54,7 +54,7 @@ ser_read (struct aev_loop *loop, aev_io *w, int evmask)
         aev_io_stop(loop, &tm->tty_w);
         disable_raw_mode(tm);
     }
-    write(STDOUT_FILENO, buf, len);
+    write(tm->ofd, buf, len);
 }
 
 /* read from controlling tty and then write to serial port */
@@ -65,7 +65,7 @@ tty_read (struct aev_loop *loop, aev_io *w, int evmask)
     unsigned char buf;
     struct terminal *tm = w->data;
 
-    len = read(STDIN_FILENO, &buf, 1);
+    len = read(tm->ifd, &buf, 1);
 
     /* map DEL to Backspace */
     if (buf == 127)
@@ -83,14 +83,17 @@ tty_read (struct aev_loop *loop, aev_io *w, int evmask)
 }
 
 struct terminal *
-new_terminal(struct aev_loop *loop, struct serial *ser)
+new_terminal(struct aev_loop *loop, struct serial *ser, int ifd, int ofd)
 {
     struct terminal *tm;
 
     tm = malloc( sizeof *tm);
 
     tm->loop = loop;
-    aev_io_init(&tm->tty_w, STDIN_FILENO, tty_read,  AEV_READ, tm);
+    tm->ifd = ifd;
+    tm->ofd = ofd;
+
+    aev_io_init(&tm->tty_w, ifd, tty_read,  AEV_READ, tm);
     aev_io_start(loop, &tm->tty_w);
 
     if ( ser ) {

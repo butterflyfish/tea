@@ -292,10 +292,10 @@ int
 enable_raw_mode(struct terminal *tm)
 {
     struct termios raw;
-    if ( !isatty(STDIN_FILENO) )
+    if ( !isatty(tm->ifd) )
         return -1;
 
-    tcgetattr(STDIN_FILENO, &termios_origin);
+    tcgetattr(tm->ifd, &termios_origin);
     raw = termios_origin;
 
     raw.c_oflag = 0;
@@ -320,7 +320,7 @@ enable_raw_mode(struct terminal *tm)
     raw.c_cc[VLNEXT] = _POSIX_VDISABLE;
     raw.c_cc[VDISCARD] = _POSIX_VDISABLE;
 
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+    tcsetattr(tm->ifd, TCSAFLUSH, &raw);
 
     return 0;
 }
@@ -328,7 +328,7 @@ enable_raw_mode(struct terminal *tm)
 void
 disable_raw_mode(struct terminal *tm)
 {
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &termios_origin);
+    tcsetattr(tm->ifd, TCSAFLUSH, &termios_origin);
 }
 
 /*
@@ -340,7 +340,7 @@ cli_loop(struct terminal *tm)
     char buf[1024];
     int len;
 
-    fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL, 0) & ~O_NONBLOCK);
+    fcntl(tm->ifd, F_SETFL, fcntl(tm->ifd, F_GETFL, 0) & ~O_NONBLOCK);
 
     disable_raw_mode(tm);
 
@@ -351,9 +351,9 @@ cli_loop(struct terminal *tm)
 
     while(1)
     {
-        write(STDOUT_FILENO, "Tea> ", sizeof "Tea> ");
+        write(tm->ofd, "Tea> ", sizeof "Tea> ");
 
-        len = read(STDIN_FILENO, buf, sizeof buf);
+        len = read(tm->ifd, buf, sizeof buf);
         buf[len] = 0;
 
         /* to jump out setup */
@@ -366,7 +366,7 @@ cli_loop(struct terminal *tm)
     }
 
     enable_raw_mode(tm);
-    fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL, 0) | O_NONBLOCK);
+    fcntl(tm->ifd, F_SETFL, fcntl(tm->ifd, F_GETFL, 0) | O_NONBLOCK);
 }
 
 struct command cmdtbl[] = {

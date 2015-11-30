@@ -38,15 +38,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 struct terminal {
 
     struct serial *ser;
-
     aev_io ser_w;   /* serial port watcher */
-    aev_io tty_w;   /* controling tty watcher */
+
+    int ifd,ofd; /* read/write fd representing tty */
+    aev_io tty_w;   /* controling tty read watcher */
+
     struct aev_loop *loop;
 };
 
 /* create a new terminal */
 struct terminal *
-new_terminal(struct aev_loop *loop, struct serial *ser);
+new_terminal(struct aev_loop *loop, struct serial *ser, int ifd, int ofd);
 
 /* connect new serial */
 void
