@@ -59,7 +59,7 @@ ser_read (struct aev_loop *loop, aev_io *w, int evmask)
 
 /* read from controlling tty and then write to serial port */
 static void
-tty_read (struct aev_loop *loop, aev_io *w, int evmask)
+term_read (struct aev_loop *loop, aev_io *w, int evmask)
 {
     int len;
     unsigned char buf;
@@ -93,7 +93,7 @@ new_terminal(struct aev_loop *loop, struct serial *ser, int ifd, int ofd)
     tm->ifd = ifd;
     tm->ofd = ofd;
 
-    aev_io_init(&tm->tty_w, ifd, tty_read,  AEV_READ, tm);
+    aev_io_init(&tm->tty_w, ifd, term_read,  AEV_READ, tm);
     aev_io_start(loop, &tm->tty_w);
 
     if ( ser ) {
