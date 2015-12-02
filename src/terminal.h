@@ -40,8 +40,8 @@ struct terminal {
     struct serial *ser;
     aev_io ser_w;   /* serial port watcher */
 
-    int ifd,ofd; /* read/write fd representing tty */
-    aev_io tty_w;   /* controling tty read watcher */
+    int ifd, ofd;     /* reader/writer fd representing terminal */
+    aev_io term_w;   /* controling tty read watcher */
 
     struct aev_loop *loop;
 };

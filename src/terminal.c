@@ -51,7 +51,7 @@ ser_read (struct aev_loop *loop, aev_io *w, int evmask)
     len = read(tm->ser->fd, buf, sizeof buf);
     if( len <= 0) {
         aev_io_stop(loop, &tm->ser_w);
-        aev_io_stop(loop, &tm->tty_w);
+        aev_io_stop(loop, &tm->term_w);
         disable_raw_mode(tm);
     }
     write(tm->ofd, buf, len);
@@ -93,8 +93,8 @@ new_terminal(struct aev_loop *loop, struct serial *ser, int ifd, int ofd)
     tm->ifd = ifd;
     tm->ofd = ofd;
 
-    aev_io_init(&tm->tty_w, ifd, term_read,  AEV_READ, tm);
-    aev_io_start(loop, &tm->tty_w);
+    aev_io_init(&tm->term_w, ifd, term_read,  AEV_READ, tm);
+    aev_io_start(loop, &tm->term_w);
 
     if ( ser ) {
 
