@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "aev.h"
 #include "serial.h"
+#include "tea.h"
 
 struct terminal {
 
@@ -48,7 +49,7 @@ struct terminal {
 
 /* create a new terminal */
 struct terminal *
-new_terminal(struct aev_loop *loop, struct serial *ser, int ifd, int ofd);
+new_terminal(tea_t *tea, int ifd, int ofd);
 
 /* connect new serial */
 void

@@ -83,28 +83,21 @@ term_read (struct aev_loop *loop, aev_io *w, int evmask)
 }
 
 struct terminal *
-new_terminal(struct aev_loop *loop, struct serial *ser, int ifd, int ofd)
+new_terminal(tea_t *tea, int ifd, int ofd)
 {
     struct terminal *tm;
 
     tm = malloc( sizeof *tm);
 
-    tm->loop = loop;
+    tm->loop = &tea->loop;
     tm->ifd = ifd;
     tm->ofd = ofd;
+    tm->ser = NULL;
 
     aev_io_init(&tm->term_w, ifd, term_read,  AEV_READ, tm);
-    aev_io_start(loop, &tm->term_w);
+    aev_io_start(tm->loop, &tm->term_w);
 
-    if ( ser ) {
-
-        tm->ser = ser;
-        aev_io_init(&tm->ser_w, ser->fd, ser_read,  AEV_READ, tm);
-        aev_io_start(loop, &tm->ser_w);
-
-    } else {
-        tm->ser = NULL;
-    }
+    terminal_connect_serial(tm, NULL);
 
     enable_raw_mode(tm);
 
@@ -115,7 +108,7 @@ void terminal_connect_serial(struct terminal *tm, char *name){
     struct serial *ser = NULL;
     int ret;
 
-    ret = open_serial(name, &ser);
+    ret = name ? open_serial(name, &ser) : open_one_idle_serial(&ser);
     if ( ret < 0 )
     {
         switch (ret) {
@@ -131,6 +124,9 @@ void terminal_connect_serial(struct terminal *tm, char *name){
         }
         return;
     }
+
+    fprintf(stderr, "Serial port %s is connected\n", ser->name);
+    fprintf(stderr, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
 
     if (tm->ser) {
         aev_io_stop(tm->loop, &tm->ser_w);

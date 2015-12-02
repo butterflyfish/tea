@@ -173,29 +173,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    fd = device ? open_serial(device, &ser) : open_one_idle_serial(&ser);
-    if ( fd < 0 )
-    {
-        switch (fd) {
-            case -ENOENT:
-                fprintf(stderr, "No serial port!\n");
-                break;
-            case -EBUSY:
-                fprintf(stderr, "Serial ports are busy!\n");
-                break;
-            default:
-                fprintf(stderr, "%s\n", strerror(errno));
-                break;
-        }
-
-        exit(1);
-    }
-
-    fprintf(stderr, "Serial port %s is connected\n", ser->name);
-    fprintf(stderr, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
-
     aev_loop_init(&tea.loop);
-    tm = new_terminal(&tea.loop, ser, 0, 1);
+    tm = new_terminal(&tea, 0, 1);
     aev_run(&tea.loop);
     delete_terminal(tm);
 
