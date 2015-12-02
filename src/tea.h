@@ -19,4 +19,7 @@ typedef struct tea {
     enum ser_flow_ctrl flow;
 } tea_t;
 
+#define TEA_ESC_KEY           29 /* Ctrl-] */
+#define TEA_ESC_KEY_STR       "Ctrl-]"
+
 #endif

@@ -39,6 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdarg.h>
 #include "terminal.h"
 #include "cli.h"
+#include "tea.h"
 
 
 /* read  from serial port and then write to controlling tty */
@@ -72,8 +73,8 @@ term_read (struct aev_loop *loop, aev_io *w, int evmask)
     if (buf == 127)
         buf = 8;
 
-     /* esc key: Ctrl-] */
-    if ( buf == 29 ) {
+     /* esc key */
+    if ( buf == TEA_ESC_KEY ) {
 
         cli_loop(tm);
         return;
@@ -136,7 +137,7 @@ void terminal_connect_serial(struct terminal *tm, char *name){
     }
 
     terminal_print(tm, "Serial port %s is connected\n", ser->name);
-    terminal_print(tm, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
+    terminal_print(tm, "\033[1;31mEscape key of Tea is %s\033[0m\n", TEA_ESC_KEY_STR);
 
     if (tm->ser) {
         aev_io_stop(tm->loop, &tm->ser_w);
