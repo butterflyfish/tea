@@ -34,10 +34,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #include <string.h>
 #include <getopt.h>
-#include "serial.h"
 #include "terminal.h"
+#include "tea.h"
 
 static char *ver = "developing";
+
+tea_t  tea = {
+    .speed = B115200,
+    .cs = 0,
+    .stopbits = 1,
+    .p = SER_PARITY_NONE,
+    .flow = SER_FLOW_NONE,
+};
 
 static
 void usage()
@@ -66,15 +74,8 @@ int main(int argc, char *argv[])
 
     int version = 0;
     char *device = NULL;
-    speed_t speed = 0;
-    int need_to_apply = 0;
-    int cs = 0;
-    int stopbits = 0;
-    enum ser_parity p = SER_PARITY_NONE;
-    enum ser_flow_ctrl flow = SER_FLOW_NONE;
 
     struct terminal *tm;
-    struct aev_loop loop;
     struct serial *ser;
 
     struct option long_options[] = {
@@ -114,26 +115,34 @@ int main(int argc, char *argv[])
         break;
 
         case 's':
-        speed = baudrate_to_speed(atoi(optarg));
-        if ( speed == 0 ) {
+        tea.speed = baudrate_to_speed(atoi(optarg));
+        if ( tea.speed == 0 ) {
             fprintf(stderr, "Illegal baudrate\n");
             exit(1);
         }
         break;
 
         case 'b':
-        cs = atoi(optarg);
+        tea.cs = atoi(optarg);
+        if ( tea.cs < 5 || tea.cs> 8 ) {
+            fprintf(stderr, "number of data bits is illegal\n");
+            exit(1);
+        }
         break;
 
         case 't':
-        stopbits = atoi(optarg);
+        tea.stopbits = atoi(optarg);
+        if ( tea.stopbits !=1 && tea.stopbits != 2 ) {
+            fprintf(stderr, "number of stop bits is illegal\n");
+            exit(1);
+        }
         break;
 
         case 'p':
         if (0 == strcmp(optarg, "even"))
-            p = SER_PARITY_EVEN;
+            tea.p = SER_PARITY_EVEN;
         else if (0 == strcmp(optarg, "odd"))
-            p = SER_PARITY_ODD;
+            tea.p = SER_PARITY_ODD;
         else {
 
             fprintf(stderr, "parity type is illegal\n");
@@ -143,11 +152,11 @@ int main(int argc, char *argv[])
 
         case 'f':
         if (0 == strcmp(optarg, "xon"))
-            flow = SER_FLOW_XON;
+            tea.flow = SER_FLOW_XON;
         else if (0 == strcmp(optarg, "none"))
-            flow = SER_FLOW_NONE;
+            tea.flow = SER_FLOW_NONE;
         else {
-                fprintf(stderr, "flow control type is illegal\n");
+            fprintf(stderr, "flow control type is illegal\n");
             return 0;
         }
         break;
@@ -182,48 +191,12 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    if (speed) {
-        serial_setup_speed(ser, speed);
-        need_to_apply ++;
-    }
-
-    if (cs) {
-        if (serial_setup_csize(ser, cs) < 0 ) {
-            fprintf(stderr, "number of data bits is illegal\n");
-            close_serial(fd);
-            exit(0);
-        }
-        need_to_apply ++;
-    }
-
-    if (stopbits) {
-        if (serial_setup_stopbits(ser, stopbits) < 0 ) {
-            fprintf(stderr, "number of stop bits is illegal\n");
-            close_serial(fd);
-            exit(0);
-        }
-        need_to_apply ++;
-    }
-
-    if ( p != SER_PARITY_NONE ) {
-        serial_setup_parity(ser, p);
-        need_to_apply ++;
-    }
-
-    if ( flow != SER_FLOW_NONE ) {
-        serial_setup_flowctrl(ser, flow);
-        need_to_apply ++;
-    }
-
-    if (need_to_apply)
-        serial_apply_termios(ser);
-
     fprintf(stderr, "Serial port %s is connected\n", ser->name);
     fprintf(stderr, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
 
-    aev_loop_init(&loop);
-    tm = new_terminal(&loop, ser, 0, 1);
-    aev_run(&loop);
+    aev_loop_init(&tea.loop);
+    tm = new_terminal(&tea.loop, ser, 0, 1);
+    aev_run(&tea.loop);
     delete_terminal(tm);
 
     return 0;
