@@ -328,7 +328,8 @@ enable_raw_mode(struct terminal *tm)
 void
 disable_raw_mode(struct terminal *tm)
 {
-    tcsetattr(tm->ifd, TCSAFLUSH, &termios_origin);
+    if ( isatty(tm->ifd) )
+        tcsetattr(tm->ifd, TCSAFLUSH, &termios_origin);
 }
 
 /*
