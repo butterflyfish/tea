@@ -7,6 +7,10 @@ typedef struct tea {
 
     struct aev_loop loop;
 
+    int backlog;
+
+    aev_io telnet;
+
     /* serial settings */
     int cs;
     int stopbits;

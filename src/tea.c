@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <getopt.h>
 #include "terminal.h"
 #include "tea.h"
+#include "telnet.h"
 
 static char *ver = "developing";
 
@@ -174,9 +175,10 @@ int main(int argc, char *argv[])
     }
 
     aev_loop_init(&tea.loop);
-    tm = new_terminal(&tea, 0, 1);
+    /* tm = new_terminal(&tea, 0, 1); */
+    start_telnet_server(&tea, NULL, "6000");
     aev_run(&tea.loop);
-    delete_terminal(tm);
+    /* delete_terminal(tm); */
 
     return 0;
 }
