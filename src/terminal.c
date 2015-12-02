@@ -99,6 +99,15 @@ new_terminal(tea_t *tea, int ifd, int ofd)
 
     terminal_connect_serial(tm, NULL);
 
+    if (tm->ser) {
+        serial_setup_csize(tm->ser, tea->cs);
+        serial_setup_speed(tm->ser, tea->speed);
+        serial_setup_parity(tm->ser, tea->p);
+        serial_setup_flowctrl(tm->ser, tea->flow);
+        serial_setup_stopbits(tm->ser, tea->stopbits);
+        serial_apply_termios(tm->ser);
+    }
+
     enable_raw_mode(tm);
 
     return tm;

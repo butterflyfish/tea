@@ -218,19 +218,10 @@ open_serial(char *name, struct serial **ser)
      * a connection does not depend on the state of the modem status lines
      * 8 bits are used for both transmission and reception
     */
-    attr->c_cflag = CREAD | CLOCAL | CS8 ;
-
-    /*  set default baudrate to 115200 */
-    cfsetspeed(attr, B115200);
+    attr->c_cflag = CREAD | CLOCAL;
 
     attr->c_oflag = 0;
     attr->c_lflag = 0;
-
-    if (tcsetattr(fd,TCSAFLUSH,attr))
-    {
-        perror("tcsetattr");
-        return -errno;
-    }
 
     *ser = serial;
     return 0;
