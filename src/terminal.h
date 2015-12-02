@@ -59,4 +59,7 @@ terminal_connect_serial(struct terminal *tm, char *name);
 void
 delete_terminal(struct terminal *tm);
 
+void
+terminal_print(struct terminal *tm, const char *fmt, ...);
+
 #endif

@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <stdarg.h>
 #include "terminal.h"
 #include "cli.h"
 
@@ -122,20 +123,20 @@ void terminal_connect_serial(struct terminal *tm, char *name){
     {
         switch (ret) {
             case -ENOENT:
-                fprintf(stderr, "No serial port!\n");
+                terminal_print(tm, "No serial port!\n");
                 break;
             case -EBUSY:
-                fprintf(stderr, "Serial ports are busy!\n");
+                terminal_print(tm, "Serial ports are busy!\n");
                 break;
             default:
-                fprintf(stderr, "%s\n", strerror(errno));
+                terminal_print(tm, "%s\n", strerror(errno));
                 break;
         }
         return;
     }
 
-    fprintf(stderr, "Serial port %s is connected\n", ser->name);
-    fprintf(stderr, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
+    terminal_print(tm, "Serial port %s is connected\n", ser->name);
+    terminal_print(tm, "\033[1;31mEscape key of Tea is Ctrl-]\033[0m\n");
 
     if (tm->ser) {
         aev_io_stop(tm->loop, &tm->ser_w);
@@ -150,4 +151,17 @@ void
 delete_terminal(struct terminal *tm)
 {
     if(tm) free(tm);
+}
+
+void
+terminal_print(struct terminal *tm, const char *fmt, ...)
+{
+    va_list ap;
+    char buf[1024];
+    int len;
+
+    va_start(ap, fmt);
+    len = vsnprintf(buf, sizeof buf, fmt, ap);
+    va_end(ap);
+    write(tm->ofd, buf, len);
 }
