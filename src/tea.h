@@ -10,6 +10,7 @@ typedef struct tea {
     int backlog;
 
     aev_io telnet;
+    int port; /* telnet listen port */
 
     /* serial settings */
     int cs;

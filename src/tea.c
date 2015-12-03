@@ -40,7 +40,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static char *ver = "developing";
 
-tea_t  tea = {
+static tea_t  tea = {
+    .port = 23,
     .speed = B115200,
     .cs = 0,
     .stopbits = 1,
@@ -55,6 +56,8 @@ void usage()
             "Usage: tea [options]\n\n"
             "--version:                Show version\n"
             "--help|-h:                Help info\n"
+            "--telnet:                 Share serial port over raw telnet\n"
+            "--port:                   Listen port of raw telnet\n"
             "--device|-d:              Serial port name or path. If no, try to open one automatically\n"
             "--speed|-s:               Serial port speed. Default is 115200\n"
             "--bits|-b <5|6|7|8>:      The number of data bits. Default is 8\n"
@@ -68,20 +71,19 @@ void usage()
 int main(int argc, char *argv[])
 {
     int number;
-    int fd;
 
     int c;
     int option_index = 0;
 
     int version = 0;
+    int telnet = 0;
     char *device = NULL;
-
-    struct terminal *tm;
-    struct serial *ser;
 
     struct option long_options[] = {
 
         {"version", no_argument,       &version, 1},
+        {"telnet", no_argument,       &telnet, 1},
+        {"port",   required_argument,    0, 'n'},
         {"help",    no_argument,       0, 'h'},
         {"device",  required_argument, 0, 'd'},
         {"speed",   required_argument, 0, 's'},
@@ -104,12 +106,19 @@ int main(int argc, char *argv[])
 
         switch (c) {
         case 0:
-        fprintf (stderr, "Version is %s\n", ver);
-        exit(1);
+        if (version) {
+            fprintf (stderr, "Version is %s\n", ver);
+            exit(1);
+        }
+        break;
 
         case 'h':
         usage();
         exit(1);
+
+        case 'n':
+        tea.port = atoi(optarg);
+        break;
 
         case 'd':
         device = optarg;
@@ -175,10 +184,16 @@ int main(int argc, char *argv[])
     }
 
     aev_loop_init(&tea.loop);
-    /* tm = new_terminal(&tea, 0, 1); */
-    start_telnet_server(&tea, NULL, "6000");
+
+    if (telnet) {
+        char service[100];
+        sprintf(service, "%d", tea.port);
+        start_telnet_server(&tea, NULL, service);
+    }
+    else
+        new_terminal(&tea, 0, 1);
+
     aev_run(&tea.loop);
-    /* delete_terminal(tm); */
 
     return 0;
 }
