@@ -121,9 +121,17 @@ cmd_show(struct terminal *tm, int argc, char **argv){
 }
 
 static int
+print_serial_ports(struct serial *ser, void *data){
+    struct terminal *tm = (struct terminal *)data;
+
+    terminal_print(tm, "%s%s\n", ser->name, ser->fd ? "(connected)":"\n");
+    return 0;
+}
+
+static int
 cmd_list(struct terminal *tm, int argc, char **argv){
 
-    list_serial_port(tm->ser);
+    iterate_serial_port(tm->ser, print_serial_ports, tm);
     return 0;
 }
 
