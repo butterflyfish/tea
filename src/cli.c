@@ -250,7 +250,7 @@ cli_exec(struct terminal *tm, char *buf) {
 
     #define MAX_ARGC 5
     char *argv[MAX_ARGC] = {0};
-    char *sep = " \t\n";
+    char *sep = " \t\r\n";
     char *token;
     int argc=0;
     struct command *cmd;
