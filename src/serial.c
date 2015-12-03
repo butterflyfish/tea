@@ -92,6 +92,12 @@ add_serial(const char *name)
     struct serial *serial;
 
     serial = malloc(sizeof *serial);
+    if (serial == NULL) {
+        perror("add_serial");
+        return -1;
+    }
+    memset(serial, 0, sizeof(struct serial));
+
     strncpy(serial->name, name, sizeof(serial->name));
     SLIST_INSERT_HEAD(&serial_head, serial, node);
 
