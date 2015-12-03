@@ -116,7 +116,7 @@ cmd_xmodem_send(struct terminal *tm, int argc, char **argv){
 static int
 cmd_show(struct terminal *tm, int argc, char **argv){
 
-    show_serial_setup(tm->ser);
+    terminal_show_serial_setting(tm);
     return 0;
 }
 

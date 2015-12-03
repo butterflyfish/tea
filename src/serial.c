@@ -268,7 +268,7 @@ list_serial_port(struct serial *ser) {
     }
 }
 
-static int
+int
 speed_to_baudrate(speed_t speed)
 {
     int i = 0;
@@ -290,52 +290,6 @@ baudrate_to_speed(int baudrate)
             return ser_speed[i].speed;
 
     return 0;
-}
-
-/*
- * show setup information of serial port
- * its output like utility stty
- *
- * @ser: point to serial port
- */
-void
-show_serial_setup(struct serial *ser)
-{
-    struct termios *tms = &ser->attr;
-    int ret;
-    int baudrate;
-    int csize;
-
-    baudrate = speed_to_baudrate(cfgetispeed(tms));
-    printf("Baudrate: %d\n", baudrate);
-
-    /* the number of data bits */
-    switch( CSIZE & tms->c_cflag) {
-        case CS8: csize = 8; break;
-        case CS7: csize = 7; break;
-        case CS6: csize = 6; break;
-        case CS5: csize = 5; break;
-    }
-    printf("Number of data bits: %d\n", csize);
-
-    /* stop bits: 1 or 2 */
-    printf("Stop bits: %d\n", CSTOPB & tms->c_cflag ? 2:1);
-
-    /* partiy check */
-    printf("Parity: ");
-    if ( !(PARENB & tms->c_cflag) )
-        printf("none\n");
-    else if (PARODD & tms->c_cflag )
-        printf("odd\n");
-    else
-        printf("even\n");
-
-    /* flow control */
-    printf("Flow control: ");
-    if ((IXON & tms->c_iflag) && (IXOFF & tms->c_iflag))
-        printf("Xon\n");
-    else
-        printf("none\n");
 }
 
 int

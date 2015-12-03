@@ -62,4 +62,11 @@ delete_terminal(struct terminal *tm);
 void
 terminal_print(struct terminal *tm, const char *fmt, ...);
 
+/*
+ * show setup information of serial port attached on terminal @tm
+ * its output like utility stty
+ */
+void
+terminal_show_serial_setting(struct terminal *tm);
+
 #endif

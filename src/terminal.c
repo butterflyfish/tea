@@ -166,3 +166,47 @@ terminal_print(struct terminal *tm, const char *fmt, ...)
     va_end(ap);
     write(tm->ofd, buf, len);
 }
+
+/*
+ * show setup information of serial port attached on terminal @tm
+ * its output like utility stty
+ */
+void
+terminal_show_serial_setting(struct terminal *tm)
+{
+    struct termios *tms = &tm->ser->attr;
+    int ret;
+    int baudrate;
+    int csize;
+
+    baudrate = speed_to_baudrate(cfgetispeed(tms));
+    terminal_print(tm,"Baudrate: %d\n", baudrate);
+
+    /* the number of data bits */
+    switch( CSIZE & tms->c_cflag) {
+        case CS8: csize = 8; break;
+        case CS7: csize = 7; break;
+        case CS6: csize = 6; break;
+        case CS5: csize = 5; break;
+    }
+    terminal_print(tm,"Number of data bits: %d\n", csize);
+
+    /* stop bits: 1 or 2 */
+    terminal_print(tm,"Stop bits: %d\n", CSTOPB & tms->c_cflag ? 2:1);
+
+    /* partiy check */
+    terminal_print(tm,"Parity: ");
+    if ( !(PARENB & tms->c_cflag) )
+        terminal_print(tm,"none\n");
+    else if (PARODD & tms->c_cflag )
+        terminal_print(tm,"odd\n");
+    else
+        terminal_print(tm,"even\n");
+
+    /* flow control */
+    terminal_print(tm,"Flow control: ");
+    if ((IXON & tms->c_iflag) && (IXOFF & tms->c_iflag))
+        terminal_print(tm,"Xon\n");
+    else
+        terminal_print(tm,"none\n");
+}

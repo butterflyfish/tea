@@ -92,20 +92,16 @@ close_all_serials(void);
 void
 list_serial_port(struct serial *ser);
 
-/*
- * show setup information of serial port
- * its output like utility stty
- *
- * @ser: point to serial port
- */
-void
-show_serial_setup(struct serial *ser);
 
 /* translate literal baudrate to speed_t
  * @baudrate: literal baudrate,e.g. 115200
  */
 speed_t
 baudrate_to_speed(int baudrate);
+
+/* translate speed_t to literal baudrate */
+int
+speed_to_baudrate(speed_t speed);
 
 /* update speed, but not apply to serial port */
 int
