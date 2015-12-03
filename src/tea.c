@@ -58,7 +58,7 @@ void usage()
             "--help|-h:                Help info\n"
             "--telnet:                 Share serial port over raw telnet\n"
             "--port:                   Listen port of raw telnet\n"
-            "--device|-d:              Serial port name or path. If no, try to open one automatically\n"
+            "--device|-d:              Serial port name or path. If no, try to open one automatically, but ignored if telnet is enabled.\n"
             "--speed|-s:               Serial port speed. Default is 115200\n"
             "--bits|-b <5|6|7|8>:      The number of data bits. Default is 8\n"
             "--stopbits|-t <1|2>:      The number of stop bit. Default is 1\n"
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
         start_telnet_server(&tea, NULL, service);
     }
     else
-        new_terminal(&tea, 0, 1);
+        new_terminal(&tea, device, 0, 1);
 
     aev_run(&tea.loop);
 

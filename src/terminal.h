@@ -49,7 +49,7 @@ struct terminal {
 
 /* create a new terminal */
 struct terminal *
-new_terminal(tea_t *tea, int ifd, int ofd);
+new_terminal(tea_t *tea, char *name, int ifd, int ofd);
 
 /* connect new serial */
 void

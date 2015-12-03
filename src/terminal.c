@@ -85,7 +85,7 @@ term_read (struct aev_loop *loop, aev_io *w, int evmask)
 }
 
 struct terminal *
-new_terminal(tea_t *tea, int ifd, int ofd)
+new_terminal(tea_t *tea, char *name, int ifd, int ofd)
 {
     struct terminal *tm;
 
@@ -99,7 +99,7 @@ new_terminal(tea_t *tea, int ifd, int ofd)
     aev_io_init(&tm->term_w, ifd, term_read,  AEV_READ, tm);
     aev_io_start(tm->loop, &tm->term_w);
 
-    terminal_connect_serial(tm, NULL);
+    terminal_connect_serial(tm, name);
 
     if (tm->ser) {
         serial_setup_csize(tm->ser, tea->cs);

@@ -142,5 +142,5 @@ new_telnet_connection(struct aev_loop *loop, aev_io *w, int envmask){
              "(host=%s, port=%s)\n", cfd, hbuf, sbuf);
     }
 
-    new_terminal(tea, cfd, cfd);
+    new_terminal(tea, NULL, cfd, cfd);
 }
