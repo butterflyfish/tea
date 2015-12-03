@@ -70,8 +70,8 @@ cmd_help(struct terminal *tm, int argc, char **argv){
 
     for(cmd = &cmdtbl[0]; cmd->name; cmd = &cmdtbl[++i]) {
 
-        printf("\r\n  \x1b[1m%s\x1b[0m \x1b[90m%s\x1b[0m\r\n", cmd->name, cmd->params);
-        printf("  \x1b[33msummary:\x1b[0m %s\r\n", cmd->summary);
+        terminal_print(tm, "\r\n  \x1b[1m%s\x1b[0m \x1b[90m%s\x1b[0m\r\n", cmd->name, cmd->params);
+        terminal_print(tm, "  \x1b[33msummary:\x1b[0m %s\r\n", cmd->summary);
     }
 
     return 0;
@@ -84,7 +84,7 @@ cmd_kermit_send(struct terminal *tm, int argc, char **argv){
         return -1;
 
     if ( kermit_send_file(tm->ser->fd, &argv[1]) )
-        fprintf(stderr, "send file failed!\n");
+        terminal_print(tm, "send file failed!\n");
 
     return 0;
 }
@@ -96,7 +96,7 @@ cmd_ymodem_send(struct terminal *tm, int argc, char **argv){
         return -1;
 
     if ( xymodem_send_file(1024, tm->ser->fd, argv[1]) )
-        fprintf(stderr, "send file failed!\n");
+        terminal_print(tm, "send file failed!\n");
 
     return 0;
 }
@@ -108,7 +108,7 @@ cmd_xmodem_send(struct terminal *tm, int argc, char **argv){
         return -1;
 
     if ( xymodem_send_file(128, tm->ser->fd, argv[1]) )
-        fprintf(stderr, "send file failed!\n");
+        terminal_print(tm, "send file failed!\n");
 
     return 0;
 }
@@ -148,7 +148,7 @@ cmd_speed(struct terminal *tm, int argc, char **argv){
 
     speed = baudrate_to_speed(atoi(argv[1]));
     if ( speed == 0 ) {
-        fprintf(stderr, "illegal baudrate \x1b[33m%s\x1b[0m\n", argv[1]);
+        terminal_print(tm, "illegal baudrate \x1b[33m%s\x1b[0m\n", argv[1]);
         return 0;
     }
 
@@ -168,7 +168,7 @@ cmd_csize(struct terminal *tm, int argc, char **argv){
 
     cs = atoi(argv[1]);
     if ( serial_setup_csize(tm->ser, cs) < 0 ) {
-        fprintf(stderr, "illegal csize \x1b[33m%s\x1b[0m\n", argv[1]);
+        terminal_print(tm, "illegal csize \x1b[33m%s\x1b[0m\n", argv[1]);
         return 0;
     }
 
@@ -187,7 +187,7 @@ cmd_stopbits(struct terminal *tm, int argc, char **argv){
 
     stopbits = atoi(argv[1]);
     if ( serial_setup_stopbits(tm->ser, stopbits) < 0 ) {
-        fprintf(stderr, "illegal stopbits \x1b[33m%s\x1b[0m\n", argv[1]);
+        terminal_print(tm, "illegal stopbits \x1b[33m%s\x1b[0m\n", argv[1]);
         return 0;
     }
 
@@ -211,7 +211,7 @@ cmd_parity(struct terminal *tm, int argc, char **argv){
     else if (0 == strcmp(argv[1], "none"))
         p = SER_PARITY_NONE;
     else {
-        fprintf(stderr, "illegal parity \x1b[33m%s\x1b[0m\n", argv[1]);
+        terminal_print(tm, "illegal parity \x1b[33m%s\x1b[0m\n", argv[1]);
         return 0;
     }
 
@@ -234,7 +234,7 @@ cmd_flow(struct terminal *tm, int argc, char **argv){
     else if (0 == strcmp(argv[1], "none"))
         flow = SER_FLOW_NONE;
     else {
-        fprintf(stderr, "illegal flow control type \x1b[33m%s\x1b[0m\n", argv[1]);
+        terminal_print(tm, "illegal flow control type \x1b[33m%s\x1b[0m\n", argv[1]);
         return 0;
     }
 
@@ -272,12 +272,12 @@ cli_exec(struct terminal *tm, char *buf) {
         if ( 0 == strcmp(cmd->name, argv[0]) ) {
             ret = cmd->func(tm, argc, argv);
             if ( ret < 0 && cmd->params)
-                fprintf(stderr, "\x1b[33mSYNOPSIS:\x1b[0m %s %s\n", cmd->name, cmd->params);
+                terminal_print(tm, "\x1b[33mSYNOPSIS:\x1b[0m %s %s\n", cmd->name, cmd->params);
 
             return;
         }
     }
-    fprintf(stderr, "Unknow command \x1b[33m%s\x1b[0m\n", argv[0]);
+    terminal_print(tm, "Unknow command \x1b[33m%s\x1b[0m\n", argv[0]);
 }
 
 /*
@@ -348,7 +348,7 @@ cli_loop(struct terminal *tm)
     putchar('\n');
 
     /* green color */
-    fprintf(stderr, "\n\033[1;32mPress Enter to resume the connection,type help get command list.\033[0m\n");
+    terminal_print(tm, "\n\033[1;32mPress Enter to resume the connection,type help get command list.\033[0m\n");
 
     while(1)
     {
