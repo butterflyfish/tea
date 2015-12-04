@@ -86,21 +86,13 @@ static inline int _aev_timer_restart(struct aev_loop *loop, aev_timer *w) {
     struct kevent ke;
     uint16_t flags = EV_ADD;
 
-    if ( 0 == w->periodic )
+    if ( AEV_TIMER_ONESHOT == w->evmask )
         flags |= EV_ONESHOT;
 
     EV_SET(&ke, w->ident, EVFILT_TIMER, flags, 0, w->timeout, w);
     if (kevent(loop->aevfd, &ke, 1, NULL, 0, NULL) == -1) return -1;
 
     return 0;
-}
-
-static inline int _aev_timer_start(struct aev_loop *loop, aev_timer *w) {
-
-    int ret;
-    ret = _aev_timer_restart(loop, w);
-    if (0 == ret) aev_ref_get(loop);
-    return ret;
 }
 
 static inline int _aev_timer_stop(struct aev_loop *loop, aev_timer *w) {
@@ -132,8 +124,9 @@ static inline int _aev_run(struct aev_loop *loop){
 
     numevents = kevent(loop->aevfd, NULL, 0, events, AEV_MAX_EVENT_SIZE, NULL);
 
-    if (numevents < 0)
+    if (numevents < 1){
         return numevents;
+    }
 
     for(j = 0; j < numevents; j++) {
         struct kevent *ke = events+j;
@@ -141,7 +134,7 @@ static inline int _aev_run(struct aev_loop *loop){
         if ( ke->filter == EVFILT_TIMER ) {
             tm = (aev_timer *)(ke->udata);
             tm->cb(loop, tm);
-            if (0 == tm->periodic)
+            if ( AEV_TIMER_ONESHOT == tm->evmask )
                 aev_ref_put(loop);
 
             continue;

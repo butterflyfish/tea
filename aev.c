@@ -120,19 +120,20 @@ int aev_timer_init(aev_timer *w, aev_timer_cb cb,  unsigned long ms,
     return _aev_timer_init(w);
 }
 
+int aev_timer_restart(struct aev_loop *loop, aev_timer *w) {
+
+    return _aev_timer_restart(loop, w);
+}
+
 int aev_timer_start(struct aev_loop *loop, aev_timer *w) {
 
-    return _aev_timer_start(loop, w);
+    int ret;
+    ret = _aev_timer_restart(loop, w);
+    if (0 == ret) aev_ref_get(loop);
+    return ret;
 }
 
 int aev_timer_stop(struct aev_loop *loop, aev_timer *w) {
 
     return _aev_timer_stop(loop, w);
-}
-
-
-
-int aev_timer_restart(struct aev_loop *loop, aev_timer *w) {
-
-    return _aev_timer_restart(loop, w);
 }
