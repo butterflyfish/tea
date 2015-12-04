@@ -102,10 +102,14 @@ new_terminal(tea_t *tea, char *name, int ifd, int ofd)
     tm->ofd = ofd;
     tm->ser = NULL;
 
+    if (terminal_connect_serial(tm, name)) {
+        close(ifd);
+        free(tm);
+        return NULL;
+    }
+
     aev_io_init(&tm->term_w, ifd, term_read,  AEV_READ, tm);
     aev_io_start(tm->loop, &tm->term_w);
-
-    terminal_connect_serial(tm, name);
 
     if (tm->ser) {
         serial_setup_csize(tm->ser, tea->cs);
@@ -121,7 +125,8 @@ new_terminal(tea_t *tea, char *name, int ifd, int ofd)
     return tm;
 }
 
-void terminal_connect_serial(struct terminal *tm, char *name){
+int
+terminal_connect_serial(struct terminal *tm, char *name){
     struct serial *ser = NULL;
     int ret;
 
@@ -136,10 +141,10 @@ void terminal_connect_serial(struct terminal *tm, char *name){
                 terminal_print(tm, "\033[1;31mSerial ports are busy!\033[0m\n");
                 break;
             default:
-                terminal_print(tm, "\033[1;31m%s\033[0m\n", strerror(errno));
+                terminal_print(tm, "\033[1;31mFailed to open serial -- %s\033[0m\n", strerror(errno));
                 break;
         }
-        return;
+        return -1;
     }
 
     terminal_print(tm, "Serial port %s is connected\n", ser->name);
@@ -152,6 +157,7 @@ void terminal_connect_serial(struct terminal *tm, char *name){
     tm->ser = ser;
     aev_io_init(&tm->ser_w, ser->fd, ser_read, AEV_READ, tm);
     aev_io_start(tm->loop, &tm->ser_w);
+    return 0;
 }
 
 void

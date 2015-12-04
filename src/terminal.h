@@ -52,7 +52,7 @@ struct terminal *
 new_terminal(tea_t *tea, char *name, int ifd, int ofd);
 
 /* connect new serial */
-void
+int
 terminal_connect_serial(struct terminal *tm, char *name);
 
 /* free a new terminal created by new_terminal */
