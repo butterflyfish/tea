@@ -220,13 +220,12 @@ open_serial(char *name, struct serial **ser)
     attr->c_iflag = IGNBRK | IGNPAR;
 
     /*
-     * enable receiver
-     * a connection does not depend on the state of the modem status lines
-     * 8 bits are used for both transmission and reception
+     * CREAD: enable receiver
+     * CLOCAL: local connection, no modem contol
     */
     attr->c_cflag = CREAD | CLOCAL;
 
-    attr->c_oflag = 0;
+    attr->c_oflag = 0; /* raw output */
     attr->c_lflag = 0;
 
     *ser = serial;
