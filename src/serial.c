@@ -232,6 +232,13 @@ open_serial(char *name, struct serial **ser)
     return 0;
 }
 
+void
+delete_serial(struct serial *ser) {
+
+    SLIST_REMOVE(&serial_head, ser, serial, node);
+    free(ser);
+}
+
 int
 open_one_idle_serial( struct serial **ser )
 {
@@ -246,20 +253,13 @@ open_one_idle_serial( struct serial **ser )
     return ret;
 }
 
-
-int
-close_serial(int fd)
-{
-    return close(fd);
-}
-
 void
 close_all_serials(void)
 {
     struct serial *serial;
 
     SLIST_FOREACH(serial, &serial_head, node){
-        close_serial(serial->fd);
+        close(serial->fd);
     }
 }
 

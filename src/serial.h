@@ -67,6 +67,9 @@ enum ser_flow_ctrl {
 int
 scan_serial(void);
 
+/* remove @ser from list built by scan_serial, and free it */
+void
+delete_serial(struct serial *ser);
 
 /*
  * open serial and load default value
@@ -81,9 +84,6 @@ open_serial(char *name, struct serial **ser);
  */
 int
 open_one_idle_serial( struct serial **ser );
-
-int
-close_serial(int fd);
 
 void
 close_all_serials(void);
