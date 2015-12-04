@@ -30,11 +30,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _AEV_H_
 #define _AEV_H_
 
-#include <sys/time.h>
 
-#define AEV_NONE       0
-#define AEV_READ       1
-#define AEV_WRITE      2
+#define AEV_NONE              0
+#define AEV_READ              1
+#define AEV_WRITE             2
+#define AEV_TIMER_ONESHOT     4
+#define AEV_TIMER_PERIODIC    8
 
 
 #define AEV_MAX_EVENT_SIZE 1024
@@ -139,8 +140,8 @@ typedef void (*aev_timer_cb)(struct aev_loop *loop, aev_timer *w);
 struct aev_timer {
 
     int ident;                /* id of timer */
+    int evmask;               /* event mask */
     unsigned long timeout;    /* millisecond */
-    int periodic;             /* bool. default, timer is oneshot */
     aev_timer_cb cb;          /* fd handler */
     void *data;               /* user data */
 };
@@ -149,7 +150,7 @@ struct aev_timer {
     do {        \
         if(CB) w->cb = CB; \
         w->timeout = MS; \
-        w->periodic = PERIODIC; \
+        w->evmask = PERIODIC ? AEV_TIMER_PERIODIC : AEV_TIMER_ONESHOT; \
     }while(0)
 
 
