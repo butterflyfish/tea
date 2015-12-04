@@ -68,6 +68,12 @@ term_read (struct aev_loop *loop, aev_io *w, int evmask)
     struct terminal *tm = w->data;
 
     len = read(tm->ifd, &buf, 1);
+    if( len <= 0 )
+    {
+        printf("Tea: close connection of fd %d\n", tm->ifd);
+        delete_terminal(tm);
+        return;
+    }
 
     /* map DEL to Backspace */
     if (buf == 127)
@@ -151,7 +157,14 @@ void terminal_connect_serial(struct terminal *tm, char *name){
 void
 delete_terminal(struct terminal *tm)
 {
-    if(tm) free(tm);
+    struct aev_loop *loop = tm->loop;
+
+    aev_io_stop(loop, &tm->ser_w);
+    aev_io_stop(loop, &tm->term_w);
+    close(tm->ser_w.fd);
+    close(tm->term_w.fd);
+
+    free(tm);
 }
 
 void
