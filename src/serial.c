@@ -284,7 +284,7 @@ speed_to_baudrate(speed_t speed)
     int i = 0;
 
     for( i=0; i<sizeof(ser_speed)/sizeof(ser_speed[0]); i++ )
-        if (speed == ser_speed[i].baudrate)
+        if (speed == ser_speed[i].speed)
             return ser_speed[i].baudrate;
 
     return -1;
@@ -296,7 +296,7 @@ baudrate_to_speed(int baudrate)
     int i = 0;
 
     for( i=0; i<sizeof(ser_speed)/sizeof(ser_speed[0]); i++ )
-        if (baudrate == ser_speed[i].speed)
+        if (baudrate == ser_speed[i].baudrate)
             return ser_speed[i].speed;
 
     return 0;
