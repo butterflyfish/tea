@@ -65,9 +65,9 @@ static struct {
 
 static char * match_name[] = {
     "tty.usbserial",
-    "ttyS"
-    "ttyUSB"
-    "ttyACM"
+    "ttyS",
+    "ttyUSB",
+    "ttyACM",
 };
 
 static int
