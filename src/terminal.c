@@ -130,13 +130,13 @@ void terminal_connect_serial(struct terminal *tm, char *name){
     {
         switch (ret) {
             case -ENOENT:
-                terminal_print(tm, "No serial port!\n");
+                terminal_print(tm, "\033[1;31mNo serial port!\033[0m\n");
                 break;
             case -EBUSY:
-                terminal_print(tm, "Serial ports are busy!\n");
+                terminal_print(tm, "\033[1;31mSerial ports are busy!\033[0m\n");
                 break;
             default:
-                terminal_print(tm, "%s\n", strerror(errno));
+                terminal_print(tm, "\033[1;31m%s\033[0m\n", strerror(errno));
                 break;
         }
         return;
