@@ -52,9 +52,9 @@ ser_read (struct aev_loop *loop, aev_io *w, int evmask)
 
     len = read(tm->ser->fd, buf, sizeof buf);
     if( len <= 0) {
-        aev_io_stop(loop, &tm->ser_w);
-        aev_io_stop(loop, &tm->term_w);
         disable_raw_mode(tm);
+        delete_terminal(tm);
+        return;
     }
     write(tm->ofd, buf, len);
 }
