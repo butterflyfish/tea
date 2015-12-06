@@ -53,6 +53,7 @@ ser_read (struct aev_loop *loop, aev_io *w, int evmask)
     len = read(tm->ser->fd, buf, sizeof buf);
     if( len <= 0) {
         disable_raw_mode(tm);
+        delete_serial(tm->ser);
         delete_terminal(tm);
         return;
     }
