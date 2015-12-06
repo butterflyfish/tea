@@ -243,7 +243,7 @@ int
 open_one_idle_serial( struct serial **ser )
 {
     struct serial *serial;
-    int ret = 0;
+    int ret = -ENOENT;
 
     SLIST_FOREACH(serial, &serial_head, node) {
         ret = open_serial(serial->name, ser);
