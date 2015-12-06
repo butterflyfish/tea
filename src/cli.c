@@ -141,6 +141,9 @@ cmd_connect(struct terminal *tm, int argc, char **argv){
     if ( argc != 2 )
         return -1;
 
+    if (!strcmp(argv[1], tm->ser->name))
+        return 0;
+
     terminal_connect_serial(tm, argv[1]);
 
     return 0;
