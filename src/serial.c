@@ -146,7 +146,7 @@ scan_serial(void)
 
             /* ensure it's connected */
             fd = _open(list[n]->d_name);
-            if (fd) {
+            if (fd > 0) {
 
                 if ( 0 == tcgetattr(fd, &attr) ) {
 
