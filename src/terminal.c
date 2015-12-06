@@ -168,7 +168,7 @@ delete_terminal(struct terminal *tm)
 
     aev_io_stop(loop, &tm->ser_w);
     aev_io_stop(loop, &tm->term_w);
-    close(tm->ser_w.fd);
+    close_serial(tm->ser);
     close(tm->term_w.fd);
 
     free(tm);

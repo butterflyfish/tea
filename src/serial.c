@@ -198,6 +198,10 @@ open_serial(char *name, struct serial **ser)
         if (!strncmp(name, "/dev/", 5))
             name += 5;
         if (!strcmp(name, serial->name)){
+
+                if (serial->fd)
+                    return -EBUSY;
+
                 serial->fd = fd;
                 attr = &serial->attr;
                 break;
@@ -251,6 +255,13 @@ open_one_idle_serial( struct serial **ser )
             return 0;
     }
     return ret;
+}
+
+void
+close_serial(struct serial *ser) {
+
+    close(ser->fd);
+    ser->fd = 0;
 }
 
 void

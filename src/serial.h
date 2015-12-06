@@ -86,6 +86,9 @@ int
 open_one_idle_serial( struct serial **ser );
 
 void
+close_serial(struct serial *ser);
+
+void
 close_all_serials(void);
 
 /* iterating serial port
