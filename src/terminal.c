@@ -97,11 +97,15 @@ new_terminal(tea_t *tea, char *name, int ifd, int ofd)
     struct terminal *tm;
 
     tm = malloc( sizeof *tm);
+    if ( NULL == tm ) {
+        fprintf(stderr, "Failed to allocate memory for terminal\n");
+        return NULL;
+    }
 
+    memset(tm, 0, sizeof(struct terminal));
     tm->loop = &tea->loop;
     tm->ifd = ifd;
     tm->ofd = ofd;
-    tm->ser = NULL;
 
     if (terminal_connect_serial(tm, name)) {
         close(ifd);
