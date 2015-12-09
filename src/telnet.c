@@ -1,4 +1,4 @@
-/* telnet.c: map serial over raw telnet
+/* telnet.c: map serial over telnet
 
 Copyright © 2015 Michael Zhu <boot2linux@gmail.com>
 All rights reserved.
