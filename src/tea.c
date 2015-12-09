@@ -41,7 +41,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static char *ver = "developing";
 
 static tea_t  tea = {
+
     .port = 23,
+    .backlog = 10,
+
     .speed = B115200,
     .cs = 8,
     .stopbits = 1,
