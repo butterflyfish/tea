@@ -40,6 +40,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "xymodem.h"
 #include "cli.h"
 #include "serial.h"
+#include "tea.h"
+
+enum cli_state {
+    CLI_ENTER = 0,
+    CLI_IN,
+    CLI_EXIT,
+};
 
 /* cli command */
 struct command {
@@ -341,6 +348,71 @@ disable_raw_mode(struct terminal *tm)
 {
     if ( isatty(tm->ifd) )
         tcsetattr(tm->ifd, TCSAFLUSH, &termios_origin);
+}
+
+/*
+ * interactive shell
+ * return:
+ *      true: processing; false: finished
+ */
+int
+cli_process(struct terminal *tm)
+{
+    int ret = 1;
+
+    /* tm->buf[tm->len] = 0; */
+    /* fprintf(stderr, "buf[len=%d] is %s\n", tm->len, tm->buf); */
+
+    switch(tm->cli) {
+
+        case CLI_ENTER:
+
+            if ( tm->buf[tm->len - 1] != TEA_ESC_KEY ) {
+                ret = 0;
+                break;
+            }
+
+            disable_raw_mode(tm);
+            terminal_print(tm, "\n\033[1;32mPress Enter to resume the connection,"
+                               "type help get command list.\033[0m\n"); /* green color */
+            terminal_print(tm, "\rTea> ");
+            tm->cli = CLI_IN;
+            tm->len = 0;
+            break;
+
+        case CLI_IN:
+            if (tm->buf[tm->len-1] == 8) { /* backsapce */
+                tm->len -= 2;
+                break;
+            }
+
+            if (tm->buf[tm->len - 1] != '\r' && tm->buf[tm->len - 1] != '\n')
+                break;
+
+            if (tm->len == 1) { /* will jump out CLI */
+                tm->cli = CLI_EXIT;
+                tm->len = 0;
+                ret = 0;
+                break;
+            }
+
+            tm->buf[tm->len] = 0;
+            cli_exec(tm, (char*)tm->buf);
+            tm->len = 0;
+            terminal_print(tm, "\rTea> ");
+            break;
+
+        case CLI_EXIT:
+
+            enable_raw_mode(tm);
+            tm->cli = CLI_ENTER;
+            ret = 0;
+            break;
+
+        default:break;
+    }
+
+    return ret;
 }
 
 /*

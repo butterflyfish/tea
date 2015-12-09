@@ -51,5 +51,15 @@ disable_raw_mode(struct terminal *tm);
 void
 cli_loop(struct terminal *tm);
 
+/*
+ * interactive shell
+ * return:
+ *      true: processing; false: finished
+ *
+ * jump to serial again if only pressing Enter key
+ */
+int
+cli_process(struct terminal *tm);
+
 
 #endif

@@ -53,6 +53,7 @@ struct terminal {
     aev_io term_w;   /* user reader watcher */
 
     int telnet; /* telnet state */
+    int cli; /* cli state */
 
     aio_recv_t aio_recv; /* receive handler */
 

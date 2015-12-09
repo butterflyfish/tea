@@ -43,6 +43,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "aev.h"
 #include "terminal.h"
 #include "tea.h"
+#include "cli.h"
 
 /* interpreter as command */
 #define TELNET_IAC 255
@@ -166,14 +167,18 @@ input_label:
 
         if ( len == 1) {
             /* map DEL to Backspace */
-            if (tm->buf[0] == 127)
-                tm->buf[0] = 8;
+            if (tm->buf[tm->len - 1] == 127) {
+                tm->buf[tm->len - 1 ] = 8;
+            }
 
         } else if (tm->len >= 2 && tm->buf[tm->len-2] == '\r'
                    && tm->buf[tm->len-1] == 0 ) {
 
             tm->len -= 1; /* remove string terminator */
         }
+
+        if(cli_process(tm))
+            return;
 
         if (tm->ser) {
             /* TODO: handle write error */
