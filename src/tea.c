@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
         start_telnet_server(&tea, NULL, service);
     }
     else
-        new_terminal(&tea, device, 0, 1);
+        new_terminal(&tea, device, 0, 1, tty_read);
 
     aev_run(&tea.loop);
 

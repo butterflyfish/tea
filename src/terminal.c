@@ -61,8 +61,8 @@ ser_read (struct aev_loop *loop, aev_io *w, int evmask)
 }
 
 /* read from controlling tty and then write to serial port */
-static void
-term_read (struct aev_loop *loop, aev_io *w, int evmask)
+void
+tty_read (struct aev_loop *loop, aev_io *w, int evmask)
 {
     int len;
     unsigned char buf;
@@ -71,7 +71,6 @@ term_read (struct aev_loop *loop, aev_io *w, int evmask)
     len = read(tm->ifd, &buf, 1);
     if( len <= 0 )
     {
-        printf("Tea: close connection of fd %d\n", tm->ifd);
         delete_terminal(tm);
         return;
     }
@@ -92,7 +91,7 @@ term_read (struct aev_loop *loop, aev_io *w, int evmask)
 }
 
 struct terminal *
-new_terminal(tea_t *tea, char *name, int ifd, int ofd)
+new_terminal(tea_t *tea, char *name, int ifd, int ofd, aio_recv_t aio_recv)
 {
     struct terminal *tm;
 
@@ -113,7 +112,7 @@ new_terminal(tea_t *tea, char *name, int ifd, int ofd)
         return NULL;
     }
 
-    aev_io_init(&tm->term_w, ifd, term_read,  AEV_READ, tm);
+    aev_io_init(&tm->term_w, ifd, aio_recv, AEV_READ, tm);
     aev_io_start(tm->loop, &tm->term_w);
 
     if (tm->ser) {

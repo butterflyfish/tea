@@ -44,6 +44,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "terminal.h"
 #include "tea.h"
 
+/* interpreter as command */
+#define TELNET_IAC 255
+
+enum telnet_state {
+    TELNET_STATE_DATA = 0,
+    TELNET_STATE_IAC,
+    TELNET_STATE_OPT,
+    TELNET_STATE_NEGOTIATED,
+};
 
 static void
 new_telnet_connection(struct aev_loop *loop, aev_io *w, int envmask);
@@ -121,6 +130,97 @@ start_telnet_server(tea_t *tea, const char *ip, const char * port) {
     return 0;
 }
 
+static int
+send_negotiation(int fd)
+{
+    const char *negotiation =
+            "\xFF\xFB\x01"; // Will Echo
+
+    return write(fd, negotiation, strlen(negotiation));
+}
+
+static void
+telnet_recv (struct aev_loop *loop, aev_io *w, int evmask){
+
+    struct terminal *tm = w->data;
+    unsigned char byte;
+    int i;
+    int len;
+
+
+    /* why not read one byte each time ?
+     * reduce system call for raw telent,telnet negotiation
+     */
+    len = read(tm->ifd, &tm->buf[tm->len], TERMINAL_BUF_SIZE - tm->len);
+    if( len <= 0 )
+    {
+        fprintf(stderr, "close connection on fd %d\n", tm->ifd);
+        delete_terminal(tm);
+        return;
+    }
+
+    tm->len += len;
+
+input_label:
+    if ( tm->telnet == TELNET_STATE_NEGOTIATED ) {
+
+        if ( len == 1) {
+            /* map DEL to Backspace */
+            if (tm->buf[0] == 127)
+                tm->buf[0] = 8;
+
+        } else if (tm->len >= 2 && tm->buf[tm->len-2] == '\r'
+                   && tm->buf[tm->len-1] == 0 ) {
+
+            tm->len -= 1; /* remove string terminator */
+        }
+
+        if (tm->ser) {
+            /* TODO: handle write error */
+            write(tm->ser->fd, tm->buf, tm->len);
+            tm->len = 0;
+        }
+    }
+
+    for (i = 0, len = tm->len; i < len; i++) {
+
+        byte = tm->buf[i];
+
+        switch(tm->telnet) {
+
+            case TELNET_STATE_DATA:
+                if ( byte == TELNET_IAC ) {
+
+                    tm->telnet = TELNET_STATE_IAC;
+                    tm->len -= 1;
+                }else {
+
+                    tm->telnet = TELNET_STATE_NEGOTIATED;
+                }
+                break;
+
+            case TELNET_STATE_IAC:
+                /* ignore command now */
+
+                tm->len -= 1;
+                tm->telnet = TELNET_STATE_OPT;
+                break;
+
+            case TELNET_STATE_OPT:
+                /* ignore option now */
+
+                tm->len -= 1;
+                tm->telnet = TELNET_STATE_DATA;
+                break;
+
+            case TELNET_STATE_NEGOTIATED:
+                goto input_label;
+
+            default:break;
+        }
+    }
+}
+
 static void
 new_telnet_connection(struct aev_loop *loop, aev_io *w, int envmask){
 
@@ -130,6 +230,7 @@ new_telnet_connection(struct aev_loop *loop, aev_io *w, int envmask){
     int cfd;
     int ret;
     tea_t *tea = w->data;
+    struct terminal *tm;
 
     cfd = accept (w->fd, &addr, &len);
     ret = getnameinfo (&addr, len,
@@ -138,9 +239,21 @@ new_telnet_connection(struct aev_loop *loop, aev_io *w, int envmask){
                            NI_NUMERICHOST | NI_NUMERICSERV);
     if (ret == 0)
     {
-        printf("Accepted connection on socket fd %d "
+        fprintf(stderr, "Accepted connection on socket fd %d "
              "(host=%s, port=%s)\n", cfd, hbuf, sbuf);
     }
 
-    new_terminal(tea, NULL, cfd, cfd);
+    if (send_negotiation(cfd) < 0 ) {
+        fprintf(stderr, "Failed to send Telnet negotiation\n");
+        close(cfd);
+        return;
+    }
+
+    tm = new_terminal(tea, NULL, cfd, cfd, telnet_recv);
+    if (tm == NULL) {
+        close(cfd);
+        return;
+    }
+
+    tm->telnet = TELNET_STATE_DATA;
 }

@@ -36,20 +36,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "serial.h"
 #include "tea.h"
 
+#define TERMINAL_BUF_SIZE  512
+
+/* receive from user input and write to serial port */
+typedef void (*aio_recv_t)(struct aev_loop *loop, aev_io *w, int evmask);
+
 struct terminal {
+
+    unsigned char buf[TERMINAL_BUF_SIZE + 1];
+    int len;  /* length of data in buffer */
 
     struct serial *ser;
     aev_io ser_w;   /* serial port watcher */
 
     int ifd, ofd;     /* reader/writer fd representing terminal */
-    aev_io term_w;   /* controling tty read watcher */
+    aev_io term_w;   /* user reader watcher */
+
+    int telnet; /* telnet state */
+
+    aio_recv_t aio_recv; /* receive handler */
 
     struct aev_loop *loop;
 };
 
+/* read from controlling tty and then write to serial port */
+void
+tty_read (struct aev_loop *loop, aev_io *w, int evmask);
+
 /* create a new terminal */
 struct terminal *
-new_terminal(tea_t *tea, char *name, int ifd, int ofd);
+new_terminal(tea_t *tea, char *name, int ifd, int ofd, aio_recv_t aio_recv);
 
 /* connect new serial */
 int
