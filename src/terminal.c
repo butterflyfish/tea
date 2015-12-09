@@ -187,6 +187,14 @@ terminal_print(struct terminal *tm, const char *fmt, ...)
     va_start(ap, fmt);
     len = vsnprintf(buf, sizeof buf, fmt, ap);
     va_end(ap);
+
+    /* conver \n to \r\n */
+    if( buf[len-1] == '\n' && buf[len-2] != '\r' ) {
+
+        buf[len-1] = '\r';
+        buf[len] = '\n';
+        len  += 1;
+    }
     write(tm->ofd, buf, len);
 }
 
