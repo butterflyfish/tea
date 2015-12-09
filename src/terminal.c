@@ -65,10 +65,10 @@ void
 tty_read (struct aev_loop *loop, aev_io *w, int evmask)
 {
     int len;
-    unsigned char buf;
+    unsigned char byte;
     struct terminal *tm = w->data;
 
-    len = read(tm->ifd, &buf, 1);
+    len = read(tm->ifd, &byte, 1);
     if( len <= 0 )
     {
         delete_terminal(tm);
@@ -76,18 +76,16 @@ tty_read (struct aev_loop *loop, aev_io *w, int evmask)
     }
 
     /* map DEL to Backspace */
-    if (buf == 127)
-        buf = 8;
+    if (byte == 127)
+        byte = 8;
 
-     /* esc key */
-    if ( buf == TEA_ESC_KEY ) {
-
-        cli_loop(tm);
+    tm->buf[tm->len++] = byte;
+    if ( cli_process(tm) ) {
         return;
     }
 
     if (tm->ser)
-        write(tm->ser->fd, &buf, 1);
+        write(tm->ser->fd, &byte, 1);
 }
 
 struct terminal *

@@ -415,44 +415,6 @@ cli_process(struct terminal *tm)
     return ret;
 }
 
-/*
- * interactive shell
- */
-void
-cli_loop(struct terminal *tm)
-{
-    char buf[1024];
-    int len;
-
-    fcntl(tm->ifd, F_SETFL, fcntl(tm->ifd, F_GETFL, 0) & ~O_NONBLOCK);
-
-    disable_raw_mode(tm);
-
-    putchar('\n');
-
-    /* green color */
-    terminal_print(tm, "\n\033[1;32mPress Enter to resume the connection,type help get command list.\033[0m\n");
-
-    while(1)
-    {
-        write(tm->ofd, "Tea> ", sizeof "Tea> ");
-
-        len = read(tm->ifd, buf, sizeof buf);
-        buf[len] = 0;
-
-        /* to jump out setup */
-        if ( buf[0] == '\n' ) {
-            write(tm->ser->fd, buf, 1);
-            break;
-        }
-
-        cli_exec(tm, buf);
-    }
-
-    enable_raw_mode(tm);
-    fcntl(tm->ifd, F_SETFL, fcntl(tm->ifd, F_GETFL, 0) | O_NONBLOCK);
-}
-
 struct command cmdtbl[] = {
 
     {"quit",    cmd_quit, "",   "Exit Tea!"},
