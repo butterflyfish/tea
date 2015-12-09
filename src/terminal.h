@@ -64,6 +64,10 @@ struct terminal {
 void
 tty_read (struct aev_loop *loop, aev_io *w, int evmask);
 
+/* write data in buffer tm->buf into serial port */
+int
+terminal_write_serial(struct terminal *tm);
+
 /* create a new terminal */
 struct terminal *
 new_terminal(tea_t *tea, char *name, int ifd, int ofd, aio_recv_t aio_recv);

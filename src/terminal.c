@@ -60,6 +60,19 @@ ser_read (struct aev_loop *loop, aev_io *w, int evmask)
     write(tm->ofd, buf, len);
 }
 
+int
+terminal_write_serial(struct terminal *tm) {
+    int ret;
+
+    if (!tm->ser)
+        return 0;
+
+    /* TODO: handle write error */
+    ret = write(tm->ser->fd, tm->buf, tm->len);
+    tm->len = 0;
+    return ret;
+}
+
 /* read from controlling tty and then write to serial port */
 void
 tty_read (struct aev_loop *loop, aev_io *w, int evmask)
@@ -84,8 +97,7 @@ tty_read (struct aev_loop *loop, aev_io *w, int evmask)
         return;
     }
 
-    if (tm->ser)
-        write(tm->ser->fd, &byte, 1);
+    terminal_write_serial(tm);
 }
 
 struct terminal *

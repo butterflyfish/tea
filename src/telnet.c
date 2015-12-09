@@ -180,11 +180,7 @@ input_label:
         if(cli_process(tm))
             return;
 
-        if (tm->ser) {
-            /* TODO: handle write error */
-            write(tm->ser->fd, tm->buf, tm->len);
-            tm->len = 0;
-        }
+        terminal_write_serial(tm);
     }
 
     for (i = 0, len = tm->len; i < len; i++) {
