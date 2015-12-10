@@ -177,6 +177,13 @@ input_label:
             tm->len -= 1; /* remove string terminator */
         }
 
+        /* echo */
+        if( tm->cli ) {
+            write(tm->ofd, tm->buf + tm->len -1, 1);
+            if (tm->buf[tm->len - 1] == '\r')
+                write(tm->ofd, "\n", 1);
+        }
+
         if(cli_process(tm))
             return;
 
