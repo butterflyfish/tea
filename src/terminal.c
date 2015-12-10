@@ -136,6 +136,8 @@ new_terminal(tea_t *tea, char *name, int ifd, int ofd, aio_recv_t aio_recv)
 
     enable_raw_mode(tm);
 
+    terminal_print(tm, "\033[1;31mEscape key of Tea is %s\033[0m\n", TEA_ESC_KEY_STR);
+
     return tm;
 }
 
@@ -162,7 +164,6 @@ terminal_connect_serial(struct terminal *tm, char *name){
     }
 
     terminal_print(tm, "Serial port %s is connected\n", ser->name);
-    terminal_print(tm, "\033[1;31mEscape key of Tea is %s\033[0m\n", TEA_ESC_KEY_STR);
 
     if (tm->ser) {
         aev_io_stop(tm->loop, &tm->ser_w);
