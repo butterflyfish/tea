@@ -66,7 +66,8 @@ struct command cmdtbl[];
 static int
 cmd_quit(struct terminal *tm, int argc, char **argv){
 
-    exit(0);
+    stop_terminal(tm);
+    return 0;
 }
 
 static int

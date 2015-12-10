@@ -177,14 +177,23 @@ terminal_connect_serial(struct terminal *tm, char *name){
 void
 delete_terminal(struct terminal *tm)
 {
+    stop_terminal(tm);
+    free(tm);
+}
+
+void
+stop_terminal(struct terminal *tm)
+{
     struct aev_loop *loop = tm->loop;
 
-    aev_io_stop(loop, &tm->ser_w);
     aev_io_stop(loop, &tm->term_w);
-    close_serial(tm->ser);
-    close(tm->term_w.fd);
+    close(tm->ifd);
+    close(tm->ofd);
 
-    free(tm);
+    if(tm->ser) {
+        aev_io_stop(loop, &tm->ser_w);
+        close_serial(tm->ser);
+    }
 }
 
 void

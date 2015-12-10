@@ -76,7 +76,11 @@ new_terminal(tea_t *tea, char *name, int ifd, int ofd, aio_recv_t aio_recv);
 int
 terminal_connect_serial(struct terminal *tm, char *name);
 
-/* free a new terminal created by new_terminal */
+/* stop termianl */
+void
+stop_terminal(struct terminal *tm);
+
+/* stop terminal and free it */
 void
 delete_terminal(struct terminal *tm);
 
