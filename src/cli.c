@@ -131,7 +131,7 @@ static int
 print_serial_ports(struct serial *ser, void *data){
     struct terminal *tm = (struct terminal *)data;
 
-    terminal_print(tm, "%s%s\n", ser->name, ser->fd ? "(connected)":"\n");
+    terminal_print(tm, "%s%s\n", ser->name, ser->fd ? "(connected)":"");
     return 0;
 }
 
