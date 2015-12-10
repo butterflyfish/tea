@@ -270,7 +270,7 @@ close_all_serials(void)
     struct serial *serial;
 
     SLIST_FOREACH(serial, &serial_head, node){
-        close(serial->fd);
+        close_serial(serial);
     }
 }
 
