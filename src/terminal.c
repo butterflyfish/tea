@@ -49,12 +49,18 @@ ser_read (struct aev_loop *loop, aev_io *w, int evmask)
     int len;
     char buf[1024];
     struct terminal *tm = w->data;
+    struct serial *ser;
 
     len = read(tm->ser->fd, buf, sizeof buf);
     if( len <= 0) {
+
         disable_raw_mode(tm);
-        delete_serial(tm->ser);
+
+         /* backup ser before delete terminal */
+        ser = tm->ser;
         delete_terminal(tm);
+
+        delete_serial(ser);
         return;
     }
     write(tm->ofd, buf, len);
