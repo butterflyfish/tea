@@ -138,7 +138,7 @@ print_serial_ports(struct serial *ser, void *data){
 static int
 cmd_list(struct terminal *tm, int argc, char **argv){
 
-    iterate_serial_port(tm->ser, print_serial_ports, tm);
+    iterate_serial_port(print_serial_ports, tm);
     return 0;
 }
 

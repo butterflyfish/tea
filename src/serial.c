@@ -275,17 +275,16 @@ close_all_serials(void)
 }
 
 void
-iterate_serial_port(struct serial *ser,
-                    int (*cb)(struct serial *ser, void *data), void *data) {
+iterate_serial_port(int (*cb)(struct serial *ser, void *data), void *data) {
 
     struct serial *serial;
     int ret;
 
+    if (!cb) return;
+
     SLIST_FOREACH(serial, &serial_head, node){
-        if (cb) {
-            ret = cb(ser, data);
-            if (ret) break;
-        }
+        ret = cb(serial, data);
+        if (ret) break;
     }
 }
 

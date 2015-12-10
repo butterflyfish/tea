@@ -96,8 +96,7 @@ close_all_serials(void);
  * cb: callback function. stop iterating if it return 1
  */
 void
-iterate_serial_port(struct serial *ser,
-                    int (*cb)(struct serial *ser, void *data), void *data);
+iterate_serial_port( int (*cb)(struct serial *ser, void *data), void *data);
 
 /* translate literal baudrate to speed_t
  * @baudrate: literal baudrate,e.g. 115200
