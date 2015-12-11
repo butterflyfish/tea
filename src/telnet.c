@@ -147,6 +147,7 @@ telnet_recv (struct aev_loop *loop, aev_io *w, int evmask){
     unsigned char byte;
     int i;
     int len;
+    int ret;
 
 
     /* why not read one byte each time ?
@@ -184,8 +185,11 @@ input_label:
                 write(tm->ofd, "\n", 1);
         }
 
-        if(cli_process(tm))
+        ret = cli_process(tm);
+        if (ret) {
+            if (ret < 0) delete_terminal(tm);
             return;
+        }
 
         terminal_write_serial(tm);
     }

@@ -66,7 +66,6 @@ struct command cmdtbl[];
 static int
 cmd_quit(struct terminal *tm, int argc, char **argv){
 
-    stop_terminal(tm);
     return 0;
 }
 
@@ -270,7 +269,7 @@ cmd_flow(struct terminal *tm, int argc, char **argv){
 }
 
 
-static void
+static int
 cli_exec(struct terminal *tm, char *buf) {
 
     #define MAX_ARGC 5
@@ -292,6 +291,9 @@ cli_exec(struct terminal *tm, char *buf) {
         token= strtok(NULL,sep);
     }
 
+    if ( !strcmp(argv[0], "quit") )
+        return -1;
+
     for(cmd = &cmdtbl[0]; cmd->name; cmd = &cmdtbl[i++]) {
 
         if ( 0 == strcmp(cmd->name, argv[0]) ) {
@@ -299,10 +301,11 @@ cli_exec(struct terminal *tm, char *buf) {
             if ( ret < 0 && cmd->params)
                 terminal_print(tm, "\x1b[33mSYNOPSIS:\x1b[0m %s %s\n", cmd->name, cmd->params);
 
-            return;
+            return 0;
         }
     }
     terminal_print(tm, "Unknow command \x1b[33m%s\x1b[0m\n", argv[0]);
+    return 0;
 }
 
 /*
@@ -406,7 +409,9 @@ cli_process(struct terminal *tm)
             }
 
             tm->buf[tm->len] = 0;
-            cli_exec(tm, (char*)tm->buf);
+            if ( cli_exec(tm, (char*)tm->buf) ){
+                return -1;
+            }
             tm->len = 0;
             terminal_print(tm, "\rTea> ");
             break;

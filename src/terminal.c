@@ -84,6 +84,7 @@ void
 tty_read (struct aev_loop *loop, aev_io *w, int evmask)
 {
     int len;
+    int ret;
     unsigned char byte;
     struct terminal *tm = w->data;
 
@@ -99,7 +100,9 @@ tty_read (struct aev_loop *loop, aev_io *w, int evmask)
         byte = 8;
 
     tm->buf[tm->len++] = byte;
-    if ( cli_process(tm) ) {
+    ret = cli_process(tm);
+    if (ret) {
+        if (ret < 0) delete_terminal(tm);
         return;
     }
 
@@ -185,13 +188,6 @@ terminal_connect_serial(struct terminal *tm, char *name){
 void
 delete_terminal(struct terminal *tm)
 {
-    stop_terminal(tm);
-    free(tm);
-}
-
-void
-stop_terminal(struct terminal *tm)
-{
     struct aev_loop *loop = tm->loop;
 
     aev_io_stop(loop, &tm->term_w);
@@ -202,6 +198,7 @@ stop_terminal(struct terminal *tm)
         aev_io_stop(loop, &tm->ser_w);
         close_serial(tm->ser);
     }
+    free(tm);
 }
 
 void
