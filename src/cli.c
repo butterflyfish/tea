@@ -132,7 +132,13 @@ static int
 print_serial_ports(struct serial *ser, void *data){
     struct terminal *tm = (struct terminal *)data;
 
-    terminal_print(tm, "%s%s\n", ser->name, ser->fd ? "(connected)":"");
+    if (!strcmp(tm->ser->name, ser->name)) /* current serial port */
+            terminal_print(tm, "\033[1;32m%s\033[0m\n", ser->name); /* green color */
+    else if (ser->fd) /* connected by other terminal */
+            terminal_print(tm, "\033[1;31m%s\033[0m\n", ser->name); /* red color */
+    else
+            terminal_print(tm, "%s\n", ser->name);
+
     return 0;
 }
 
