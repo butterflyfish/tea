@@ -380,6 +380,8 @@ cli_process(struct terminal *tm)
             }
 
             disable_raw_mode(tm);
+            aev_io_stop(tm->loop, &tm->ser_w);
+
             terminal_print(tm, "\n\033[1;32mPress Enter to resume the connection,"
                                "type help get command list.\033[0m\n"); /* green color */
             terminal_print(tm, "\rTea> ");
@@ -412,6 +414,8 @@ cli_process(struct terminal *tm)
         case CLI_EXIT:
 
             enable_raw_mode(tm);
+            aev_io_start(tm->loop, &tm->ser_w);
+
             tm->cli = CLI_ENTER;
             ret = 0;
             break;
