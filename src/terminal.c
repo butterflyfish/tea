@@ -173,6 +173,7 @@ terminal_connect_serial(struct terminal *tm, char *name){
 
     if (tm->ser) {
         aev_io_stop(tm->loop, &tm->ser_w);
+        close_serial(tm->ser);
     }
 
     tm->ser = ser;
