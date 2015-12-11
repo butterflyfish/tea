@@ -45,7 +45,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 enum cli_state {
     CLI_ENTER = 0,
     CLI_IN,
-    CLI_EXIT,
 };
 
 /* cli command */
@@ -398,13 +397,18 @@ cli_process(struct terminal *tm)
                 break;
             }
 
+            /* continue receiving */
             if (tm->buf[tm->len - 1] != '\r' && tm->buf[tm->len - 1] != '\n')
                 break;
 
             if (tm->len == 1) { /* will jump out CLI */
-                tm->cli = CLI_EXIT;
-                tm->len = 0;
+
                 ret = 0;
+                tm->cli = CLI_ENTER;
+
+                enable_raw_mode(tm);
+                aev_io_start(tm->loop, &tm->ser_w);
+
                 break;
             }
 
@@ -414,15 +418,6 @@ cli_process(struct terminal *tm)
             }
             tm->len = 0;
             terminal_print(tm, "\rTea> ");
-            break;
-
-        case CLI_EXIT:
-
-            enable_raw_mode(tm);
-            aev_io_start(tm->loop, &tm->ser_w);
-
-            tm->cli = CLI_ENTER;
-            ret = 0;
             break;
 
         default:break;
