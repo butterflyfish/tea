@@ -243,6 +243,7 @@ new_telnet_connection(struct aev_loop *loop, aev_io *w, int envmask){
     int ret;
     tea_t *tea = w->data;
     struct terminal *tm;
+    int val = 1;
 
     cfd = accept (w->fd, &addr, &len);
     ret = getnameinfo (&addr, len,
@@ -253,6 +254,13 @@ new_telnet_connection(struct aev_loop *loop, aev_io *w, int envmask){
     {
         fprintf(stderr, "Accepted connection on socket fd %d "
              "(host=%s, port=%s)\n", cfd, hbuf, sbuf);
+    }
+
+    /* Set TCP keep alive option to detect dead peer */
+    if (setsockopt(cfd, SOL_SOCKET, SO_KEEPALIVE, &val, sizeof(val)) == -1)
+    {
+        fprintf(stderr, "setsockopt SO_KEEPALIVE: %s", strerror(errno));
+        return;
     }
 
     if (send_negotiation(cfd) < 0 ) {
