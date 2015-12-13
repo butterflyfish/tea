@@ -61,6 +61,7 @@ void usage()
             "--help|-h:                Help info\n"
             "--telnet:                 Share serial port over telnet\n"
             "--port:                   Listen port of telnet\n"
+            "--forground:              Telnet run at forground\n"
             "--device|-d:              Serial port name or path. If no, try to open one automatically, but ignored if telnet is enabled.\n"
             "--speed|-s:               Serial port speed. Default is 115200\n"
             "--bits|-b <5|6|7|8>:      The number of data bits. Default is 8\n"
@@ -74,6 +75,8 @@ void usage()
 int main(int argc, char *argv[])
 {
     int number;
+    int pid;
+    int forground = 0;
 
     int c;
     int option_index = 0;
@@ -94,6 +97,7 @@ int main(int argc, char *argv[])
         {"stopbits",   required_argument, 0, 't'},
         {"parity",   required_argument, 0, 'p'},
         {"flow",   required_argument, 0, 'f'},
+        {"forground",   no_argument, &forground, 1},
         {0, 0, 0, 0}
     };
 
@@ -186,15 +190,41 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    aev_loop_init(&tea.loop);
 
     if (telnet) {
         char service[100];
+
+        if (0 == forground) {
+            pid = fork();
+            if (pid < 0) {
+                fprintf(stderr, "Fork failed: %s", strerror(errno));
+                exit(1);
+            } else if (pid > 0) {
+                exit(0);
+            }
+
+            /* obtain a new process group */
+            setsid();
+
+            if (chdir("/") < 0) {
+                fprintf(stderr, "unable to chdir to '/': %s", strerror(errno));
+                exit(1);
+            }
+
+            close(0);
+            close(1);
+            close(2);
+        }
+
+        aev_loop_init(&tea.loop);
+
         sprintf(service, "%d", tea.port);
         start_telnet_server(&tea, NULL, service);
     }
-    else
+    else {
+        aev_loop_init(&tea.loop);
         new_terminal(&tea, device, 0, 1, tty_read);
+    }
 
     aev_run(&tea.loop);
 
