@@ -43,6 +43,8 @@ typedef void (*aio_recv_t)(struct aev_loop *loop, aev_io *w, int evmask);
 
 struct terminal {
 
+    tea_t *tea;
+
     unsigned char buf[TERMINAL_BUF_SIZE + 1];
     int len;  /* length of data in buffer */
 

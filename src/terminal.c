@@ -124,6 +124,7 @@ new_terminal(tea_t *tea, char *name, int ifd, int ofd, aio_recv_t aio_recv)
     tm->loop = &tea->loop;
     tm->ifd = ifd;
     tm->ofd = ofd;
+    tm->tea = tea;
 
     if (terminal_connect_serial(tm, name)) {
         close(ifd);
@@ -134,20 +135,25 @@ new_terminal(tea_t *tea, char *name, int ifd, int ofd, aio_recv_t aio_recv)
     aev_io_init(&tm->term_w, ifd, aio_recv, AEV_READ, tm);
     aev_io_start(tm->loop, &tm->term_w);
 
-    if (tm->ser) {
-        serial_setup_csize(tm->ser, tea->cs);
-        serial_setup_speed(tm->ser, tea->speed);
-        serial_setup_parity(tm->ser, tea->p);
-        serial_setup_flowctrl(tm->ser, tea->flow);
-        serial_setup_stopbits(tm->ser, tea->stopbits);
-        serial_apply_termios(tm->ser);
-    }
-
     enable_raw_mode(tm);
 
     terminal_print(tm, "\033[1;31mEscape key of Tea is %s\033[0m\n", TEA_ESC_KEY_STR);
 
     return tm;
+}
+
+static
+void terminal_setup_serial(struct terminal *tm){
+
+    tea_t *tea = tm->tea;
+    struct serial *ser = tm->ser;
+
+    serial_setup_csize(ser, tea->cs);
+    serial_setup_speed(ser, tea->speed);
+    serial_setup_parity(ser, tea->p);
+    serial_setup_flowctrl(ser, tea->flow);
+    serial_setup_stopbits(ser, tea->stopbits);
+    serial_apply_termios(ser);
 }
 
 int
@@ -180,6 +186,8 @@ terminal_connect_serial(struct terminal *tm, char *name){
     }
 
     tm->ser = ser;
+    terminal_setup_serial(tm);
+
     aev_io_init(&tm->ser_w, ser->fd, ser_read, AEV_READ, tm);
     aev_io_start(tm->loop, &tm->ser_w);
     return 0;
