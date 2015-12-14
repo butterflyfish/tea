@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #include <string.h>
 #include <getopt.h>
+#include <fcntl.h>
 #include "terminal.h"
 #include "tea.h"
 #include "telnet.h"
@@ -70,6 +71,42 @@ void usage()
             "--flow|-f <xon>:          Flow control type. Default is none\n"
     );
 
+}
+
+static void
+create_pid_file(void) {
+
+    int fd;
+    FILE *pidfile;
+    struct flock lock, savelock;
+
+    fd = open(TEA_PID_FILE, O_RDWR|O_CREAT, 0640);
+    if ( fd < 0 ) {
+        fprintf(stderr, "failed to create pid file:%s\n", strerror(errno));
+        exit(1);
+    }
+
+    lock.l_type= F_WRLCK;
+    lock.l_start = 0;
+    lock.l_whence = SEEK_SET;
+    lock.l_len =0;
+
+    savelock = lock;
+    fcntl(fd, F_GETLK, &lock);
+
+    if (lock.l_type == F_WRLCK)
+    {
+        fprintf(stderr, "Another Tea instance(pid=%d) is running\n", lock.l_pid);
+        exit(1);
+    } else {
+        fcntl(fd, F_SETLK, &savelock);
+    }
+
+    pidfile = fdopen(fd, "w");
+    fprintf(pidfile, "%d\n", getpid());
+
+    /* close will unlock, so use fflush to update pid */
+    fflush(pidfile);
 }
 
 int main(int argc, char *argv[])
@@ -210,6 +247,8 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "unable to chdir to '/': %s", strerror(errno));
                 exit(1);
             }
+
+            create_pid_file();
 
             close(0);
             close(1);

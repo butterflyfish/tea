@@ -53,4 +53,7 @@ typedef struct tea {
 #define TEA_ESC_KEY           29 /* Ctrl-] */
 #define TEA_ESC_KEY_STR       "Ctrl-]"
 
+#define TEA_PID_FILE   "/var/run/tea.pid"
+
+
 #endif
