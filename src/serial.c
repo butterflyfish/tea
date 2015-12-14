@@ -112,7 +112,8 @@ _open(char *name) {
     sprintf(path, "%s%s", strncmp(name, "/dev/", sizeof "/dev/" - 1) ?
             "/dev/" : "", name);
 
-    return open(path, O_RDWR|O_NONBLOCK, 0);
+    /* O_NOCTTY: the port never becomes controlling terminal of the process */
+    return open(path, O_RDWR|O_NONBLOCK|O_NOCTTY, 0640);
 }
 
 /*
