@@ -230,6 +230,7 @@ int main(int argc, char *argv[])
 
     if (telnet) {
         char service[100];
+        int fd;
 
         if (0 == forground) {
             pid = fork();
@@ -250,9 +251,10 @@ int main(int argc, char *argv[])
 
             create_pid_file();
 
-            close(0);
-            close(1);
-            close(2);
+            fd = open("/dev/null", O_RDWR);
+            dup2(fd, 0);
+            dup2(fd, 1);
+            dup2(fd, 2);
         }
 
         aev_loop_init(&tea.loop);
