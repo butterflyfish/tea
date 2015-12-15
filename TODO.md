@@ -7,3 +7,4 @@
 * load configuration file
 * command auto-completion
 * test scripts
+* xmodem, ymodem and kermit receiver
