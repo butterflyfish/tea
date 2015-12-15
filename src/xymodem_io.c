@@ -140,6 +140,7 @@ xymodem_send_file(int mtu, int ttyfd, char *file){
 
     struct xymodem xy;
     int flags;
+    int ret;
 
     flags = fcntl(ttyfd, F_GETFL, 0);
     fcntl(ttyfd, F_SETFL, flags & ~O_NONBLOCK);
@@ -154,5 +155,8 @@ xymodem_send_file(int mtu, int ttyfd, char *file){
     xy.writepkt = writepkt;
     xy.processbar = processbar;
 
-    return xymodem(&xy, mtu, ttyfd, file);
+    ret = xymodem(&xy, mtu, ttyfd, file);
+
+    fcntl(ttyfd, F_SETFL, flags | O_NONBLOCK);
+    return ret;
 }
