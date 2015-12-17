@@ -95,16 +95,20 @@ cmd_kermit_send(struct terminal *tm, int argc, char **argv){
     return 0;
 }
 
-static int
-cmd_ymodem_send(struct terminal *tm, int argc, char **argv){
 
-    if ( argc != 2 )
-        return -1;
+static void
+_xymodem_send_file(struct terminal *tm, int mtu, char *file){
+    int flags;
+    struct xymodem xy;
 
-    if ( xymodem_send_file(1024, tm->ser->fd, argv[1]) )
+    xymodem_io_init(&xy);
+    flags = fcntl(tm->ser->fd, F_GETFL, 0);
+    fcntl(tm->ser->fd, F_SETFL, flags & ~O_NONBLOCK);
+
+    if ( xymodem_send_file(&xy, mtu, tm->ser->fd, file) )
         terminal_print(tm, "send file failed!\n");
 
-    return 0;
+    fcntl(tm->ser->fd, F_SETFL, flags | O_NONBLOCK);
 }
 
 static int
@@ -113,8 +117,18 @@ cmd_xmodem_send(struct terminal *tm, int argc, char **argv){
     if ( argc != 2 )
         return -1;
 
-    if ( xymodem_send_file(128, tm->ser->fd, argv[1]) )
-        terminal_print(tm, "send file failed!\n");
+    _xymodem_send_file(tm, 128, argv[1]);
+
+    return 0;
+}
+
+static int
+cmd_ymodem_send(struct terminal *tm, int argc, char **argv){
+
+    if ( argc != 2 )
+        return -1;
+
+    _xymodem_send_file(tm, 1024, argv[1]);
 
     return 0;
 }
