@@ -207,16 +207,8 @@ xymodem_send(struct xymodem *xy)
 }
 
 
-void
-xymodem_init(struct xymodem *xy){
-
-    memset(xy, 0, sizeof(struct xymodem));
-
-    xy->state = XYMODEM_WAIT_START;
-}
-
 int
-xymodem(struct xymodem *xy, int mtu, int ttyfd, char *filename){
+xymodem_send_file(struct xymodem *xy, int mtu, int ttyfd, char *filename){
 
     int ret = 0;
     int flags;
@@ -239,6 +231,7 @@ xymodem(struct xymodem *xy, int mtu, int ttyfd, char *filename){
         return 0;
     }
 
+    xy->state = XYMODEM_WAIT_START;
     xy->mtu = mtu;
     xy->ttyfd = ttyfd;
 

@@ -135,28 +135,16 @@ processbar(struct xymodem *xy) {
 #endif
 }
 
-int
-xymodem_send_file(int mtu, int ttyfd, char *file){
+void
+xymodem_io_init(struct xymodem *xy){
 
-    struct xymodem xy;
-    int flags;
-    int ret;
-
-    flags = fcntl(ttyfd, F_GETFL, 0);
-    fcntl(ttyfd, F_SETFL, flags & ~O_NONBLOCK);
-
-    xymodem_init(&xy);
+    memset(xy, 0, sizeof(struct xymodem));
 
     /* assign callback funcs */
-    xy.openf = openf;
-    xy.closef = closef;
-    xy.inbyte = inbyte;
-    xy.outbyte = outbyte;
-    xy.writepkt = writepkt;
-    xy.processbar = processbar;
-
-    ret = xymodem(&xy, mtu, ttyfd, file);
-
-    fcntl(ttyfd, F_SETFL, flags | O_NONBLOCK);
-    return ret;
+    xy->openf = openf;
+    xy->closef = closef;
+    xy->inbyte = inbyte;
+    xy->outbyte = outbyte;
+    xy->writepkt = writepkt;
+    xy->processbar = processbar;
 }

@@ -82,12 +82,9 @@ struct xymodem {
 
 
 void
-xymodem_init(struct xymodem *xy);
+xymodem_io_init(struct xymodem *xy);
 
 int
-xymodem(struct xymodem *xy, int mtu, int ttyfd, char *filename);
-
-int
-xymodem_send_file(int mtu, int ttyfd, char *file);
+xymodem_send_file(struct xymodem *xy, int mtu, int ttyfd, char *file);
 
 #endif
