@@ -89,7 +89,7 @@ cmd_kermit_send(struct terminal *tm, int argc, char **argv){
     if ( argc != 2 )
         return -1;
 
-    if ( kermit_send_file(tm->ser->fd, &argv[1]) )
+    if ( kermit_send_file(tm->ser->fd, &argv[1], (klog_t)terminal_print, tm) )
         terminal_print(tm, "send file failed!\n");
 
     return 0;

@@ -310,7 +310,7 @@ closefile(struct k_data * k, UCHAR c, int mode) {
 }
 
 int
-kermit_send_file(int ofd, char ** filelist) {
+kermit_send_file(int ofd, char ** filelist, klog_t klog, void *data) {
 
     int status, rx_len;
     UCHAR *inbuf;
@@ -324,7 +324,7 @@ kermit_send_file(int ofd, char ** filelist) {
 
     for (i = 0; filelist[i]; ++i) {
         if (access(filelist[i], R_OK)) {
-            fprintf(stderr, "Can not access file %s\n", filelist[i]);
+            klog(data, "Can not access file %s\n", filelist[i]);
             return 0;
         }
     }
@@ -393,17 +393,11 @@ kermit_send_file(int ofd, char ** filelist) {
                 * date, size, and bytes transferred so far.  These can be used in a
                 * file-transfer progress display, log, etc.
                 */
-                if(0 == r.sofar)
-                    printf("Sending file %s .... %%",r.filename);
-                for(i=0;i<len;i++)
-                    putchar('\b');
-                len=printf("%d",(int)(r.sofar*100/r.filesize));
-                fflush(stdout);
-
+                klog(data, "\rSending file %s .... %d%%",r.filename, (int)(r.sofar*100/r.filesize));
                 continue;            /* Keep looping */
 
             case X_DONE:
-                putchar('\n');
+                klog(data, "\n");
                 break;    /* Finished */
             case X_ERROR:
                 goto end;
