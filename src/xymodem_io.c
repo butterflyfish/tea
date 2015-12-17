@@ -62,7 +62,7 @@ openf(struct xymodem *xy, char *file){
     /* map file to memory to speed up access */
     xy->buf = mmap (0, xy->size, PROT_WRITE, MAP_SHARED, xy->fd, 0);
     if (xy->buf == MAP_FAILED) {
-        fprintf(stderr, "mmap failed\n");
+        xy->log(xy->data, "mmap failed\n");
         return -1;
     }
 
@@ -78,7 +78,7 @@ static int
 closef(struct xymodem *xy){
 
     if (munmap (xy->buf, xy->size) < 0) {
-        fprintf(stderr, "munmap failed\n");
+        xy->log(xy->data, "munmap failed\n");
         return -1;
     }
     return 0;
@@ -116,29 +116,22 @@ writepkt(struct xymodem *xy, uint8_t head[3], uint8_t sum[2]){
 void
 processbar(struct xymodem *xy) {
 #ifndef _XYMODEM_DEBUG_
-    static int len = 0;
-    int i;
 
-    if(xy->mtu == xy->offset) {
-        len = 0;
-        printf("Sending file %s .... ",xy->filename);
-    }
-
-    for(i=0; i<len; i++)
-        putchar('\b');
-
-    len=printf("%d%%", (int)(xy->offset*100/xy->size));
+    xy->log(xy->data, "\rSending file %s .... %d%%",xy->filename,
+                (int)(xy->offset*100/xy->size));
 
     if(xy->size == xy->offset)
-        putchar('\n');
-    fflush(stdout);
+        xy->log(xy->data, "\n");
 #endif
 }
 
 void
-xymodem_io_init(struct xymodem *xy){
+xymodem_io_init(struct xymodem *xy, log_t log, void *data){
 
     memset(xy, 0, sizeof(struct xymodem));
+
+    xy->log = log;
+    xy->data = data;
 
     /* assign callback funcs */
     xy->openf = openf;

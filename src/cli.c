@@ -101,7 +101,7 @@ _xymodem_send_file(struct terminal *tm, int mtu, char *file){
     int flags;
     struct xymodem xy;
 
-    xymodem_io_init(&xy);
+    xymodem_io_init(&xy, (log_t)terminal_print, tm);
     flags = fcntl(tm->ser->fd, F_GETFL, 0);
     fcntl(tm->ser->fd, F_SETFL, flags & ~O_NONBLOCK);
 

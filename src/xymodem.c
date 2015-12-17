@@ -121,7 +121,7 @@ xymodem_send(struct xymodem *xy)
 
         case XYMODEM_WAIT_START:
 
-            printf("Wait for receiver to start ...\n");
+            xy->log(xy->data, "Wait for receiver to start ...\n");
             key = xy->inbyte(xy,0);
             if (key == 'C' || key == NAK) {
 
@@ -138,7 +138,7 @@ xymodem_send(struct xymodem *xy)
 
             } else {
 
-                printf("Received unexpected char:%x\n",key);
+                xy->log(xy->data, "Received unexpected char:%x\n",key);
                 return -1;
             }
             break;
@@ -177,7 +177,7 @@ xymodem_send(struct xymodem *xy)
                 xy->outbyte(xy,ACK);
                 xy->state = XYMODEM_DONE;
             }else {
-                printf("Received unexpected char:%x\n",key);
+                xy->log(xy->data, "Received unexpected char:%x\n",key);
                 return -1;
             }
             break;
@@ -194,13 +194,13 @@ xymodem_send(struct xymodem *xy)
                 break;
             }
             if (key != ACK) {
-                printf("Timeout EOT\n");
+                xy->log(xy->data, "Timeout EOT\n");
                 return -1;
             }
             break;
 
         default:
-            printf("Unknow state\n");
+            xy->log(xy->data, "Unknow state\n");
             return -1;
     }
     return 0;
@@ -227,7 +227,7 @@ xymodem_send_file(struct xymodem *xy, int mtu, int ttyfd, char *filename){
     }
 
     if (access(filename, R_OK)) {
-        fprintf(stderr, "Can not access file %s\n", filename);
+        xy->log(xy->data, "Can not access file %s\n", filename);
         return 0;
     }
 

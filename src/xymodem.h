@@ -58,6 +58,8 @@ enum xymodem_state {
     XYMODEM_DONE,
 };
 
+typedef void (*log_t)(void *data, char *fmt, ...);
+
 struct xymodem {
 
     off_t size;      /* size of buffer to be sent */
@@ -78,11 +80,15 @@ struct xymodem {
     uint8_t (*outbyte)(struct xymodem *xy, uint8_t byte);
     int  (*writepkt)(struct xymodem *xy, uint8_t head[3], uint8_t sum[2]);
     void (*processbar)(struct xymodem *xy);
+
+    log_t log;
+    void *data;
+
 };
 
 
 void
-xymodem_io_init(struct xymodem *xy);
+xymodem_io_init(struct xymodem *xy, log_t log, void *data);
 
 int
 xymodem_send_file(struct xymodem *xy, int mtu, int ttyfd, char *file);
