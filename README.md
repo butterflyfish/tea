@@ -4,11 +4,12 @@
 ## Features
 
 * works on Linux and Mac OS X
-* open one idle seril port automatically
-* exit automatically if serial ports opened are removed
-* control termial. Trigger key is Ctrl-]
+* terminal open one idle serial port automatically
+* terminal exits automatically if serial port connected is removed
+* control terminal. Trigger key is Ctrl-]
 * send file via serial communication protocol: kermit,xmodem,ymodem
 * configure serial via option or terminal command
+* export serial ports over telnet
 
 
 ## How to build ?
