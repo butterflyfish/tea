@@ -1,6 +1,8 @@
 # Tea
 [Tea] - A simple terminal program for the serial port.
 
+![](screenshot.png)
+
 ## Features
 
 * works on Linux and Mac OS X
@@ -30,7 +32,7 @@ make install
 ## License
 Licensed under four caluse BSD.
 
-Copyright © 2015, Michael Zhu  boot2linux at gmail.com
+Copyright © 2016, Michael Zhu  boot2linux at gmail.com
 
 All rights reserved.
 
