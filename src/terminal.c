@@ -41,22 +41,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "cli.h"
 #include "tea.h"
 
-
 /* read  from serial port and then write to controlling tty */
 static void
-ser_read (struct aev_loop *loop, aev_io *w, int evmask)
+ser_read(struct aev_loop* loop, aev_io* w, int evmask)
 {
     int len;
     char buf[1024];
-    struct terminal *tm = w->data;
-    struct serial *ser;
+    struct terminal* tm = w->data;
+    struct serial* ser;
 
     len = read(tm->ser->fd, buf, sizeof buf);
-    if( len <= 0) {
+    if (len <= 0) {
 
         disable_raw_mode(tm);
 
-         /* backup ser before delete terminal */
+        /* backup ser before delete terminal */
         ser = tm->ser;
         delete_terminal(tm);
 
@@ -67,7 +66,8 @@ ser_read (struct aev_loop *loop, aev_io *w, int evmask)
 }
 
 int
-terminal_write_serial(struct terminal *tm) {
+terminal_write_serial(struct terminal* tm)
+{
     int ret;
 
     if (!tm->ser)
@@ -81,16 +81,15 @@ terminal_write_serial(struct terminal *tm) {
 
 /* read from controlling tty and then write to serial port */
 void
-tty_read (struct aev_loop *loop, aev_io *w, int evmask)
+tty_read(struct aev_loop* loop, aev_io* w, int evmask)
 {
     int len;
     int ret;
     unsigned char byte;
-    struct terminal *tm = w->data;
+    struct terminal* tm = w->data;
 
     len = read(tm->ifd, &byte, 1);
-    if( len <= 0 )
-    {
+    if (len <= 0) {
         delete_terminal(tm);
         return;
     }
@@ -102,20 +101,21 @@ tty_read (struct aev_loop *loop, aev_io *w, int evmask)
     tm->buf[tm->len++] = byte;
     ret = cli_process(tm);
     if (ret) {
-        if (ret < 0) delete_terminal(tm);
+        if (ret < 0)
+            delete_terminal(tm);
         return;
     }
 
     terminal_write_serial(tm);
 }
 
-struct terminal *
-new_terminal(tea_t *tea, char *name, int ifd, int ofd, aio_recv_t aio_recv)
+struct terminal*
+new_terminal(tea_t* tea, char* name, int ifd, int ofd, aio_recv_t aio_recv)
 {
-    struct terminal *tm;
+    struct terminal* tm;
 
-    tm = malloc( sizeof *tm);
-    if ( NULL == tm ) {
+    tm = malloc(sizeof *tm);
+    if (NULL == tm) {
         fprintf(stderr, "Failed to allocate memory for terminal\n");
         return NULL;
     }
@@ -142,11 +142,12 @@ new_terminal(tea_t *tea, char *name, int ifd, int ofd, aio_recv_t aio_recv)
     return tm;
 }
 
-static
-void terminal_setup_serial(struct terminal *tm){
+static void
+terminal_setup_serial(struct terminal* tm)
+{
 
-    tea_t *tea = tm->tea;
-    struct serial *ser = tm->ser;
+    tea_t* tea = tm->tea;
+    struct serial* ser = tm->ser;
 
     serial_setup_csize(ser, tea->cs);
     serial_setup_speed(ser, tea->speed);
@@ -157,13 +158,13 @@ void terminal_setup_serial(struct terminal *tm){
 }
 
 int
-terminal_connect_serial(struct terminal *tm, char *name){
-    struct serial *ser = NULL;
+terminal_connect_serial(struct terminal* tm, char* name)
+{
+    struct serial* ser = NULL;
     int ret;
 
     ret = name ? open_serial(name, &ser) : open_one_idle_serial(&ser);
-    if ( ret < 0 )
-    {
+    if (ret < 0) {
         switch (ret) {
             case -ENOENT:
                 terminal_print(tm, "\033[1;31mNo serial port!\033[0m\n");
@@ -194,15 +195,15 @@ terminal_connect_serial(struct terminal *tm, char *name){
 }
 
 void
-delete_terminal(struct terminal *tm)
+delete_terminal(struct terminal* tm)
 {
-    struct aev_loop *loop = tm->loop;
+    struct aev_loop* loop = tm->loop;
 
     aev_io_stop(loop, &tm->term_w);
     close(tm->ifd);
     close(tm->ofd);
 
-    if(tm->ser) {
+    if (tm->ser) {
         aev_io_stop(loop, &tm->ser_w);
         close_serial(tm->ser);
     }
@@ -210,7 +211,7 @@ delete_terminal(struct terminal *tm)
 }
 
 void
-terminal_print(struct terminal *tm, const char *fmt, ...)
+terminal_print(struct terminal* tm, const char* fmt, ...)
 {
     va_list ap;
     char buf[1024];
@@ -221,11 +222,11 @@ terminal_print(struct terminal *tm, const char *fmt, ...)
     va_end(ap);
 
     /* conver \n to \r\n */
-    if( buf[len-1] == '\n' && buf[len-2] != '\r' ) {
+    if (buf[len - 1] == '\n' && buf[len - 2] != '\r') {
 
-        buf[len-1] = '\r';
+        buf[len - 1] = '\r';
         buf[len] = '\n';
-        len  += 1;
+        len += 1;
     }
     write(tm->ofd, buf, len);
 }
@@ -235,41 +236,49 @@ terminal_print(struct terminal *tm, const char *fmt, ...)
  * its output like utility stty
  */
 void
-terminal_show_serial_setting(struct terminal *tm)
+terminal_show_serial_setting(struct terminal* tm)
 {
-    struct termios *tms = &tm->ser->attr;
+    struct termios* tms = &tm->ser->attr;
     int ret;
     int baudrate;
     int csize;
 
     baudrate = speed_to_baudrate(cfgetispeed(tms));
-    terminal_print(tm,"Baudrate: %d\n", baudrate);
+    terminal_print(tm, "Baudrate: %d\n", baudrate);
 
     /* the number of data bits */
-    switch( CSIZE & tms->c_cflag) {
-        case CS8: csize = 8; break;
-        case CS7: csize = 7; break;
-        case CS6: csize = 6; break;
-        case CS5: csize = 5; break;
+    switch (CSIZE & tms->c_cflag) {
+        case CS8:
+            csize = 8;
+            break;
+        case CS7:
+            csize = 7;
+            break;
+        case CS6:
+            csize = 6;
+            break;
+        case CS5:
+            csize = 5;
+            break;
     }
-    terminal_print(tm,"Number of data bits: %d\n", csize);
+    terminal_print(tm, "Number of data bits: %d\n", csize);
 
     /* stop bits: 1 or 2 */
-    terminal_print(tm,"Stop bits: %d\n", CSTOPB & tms->c_cflag ? 2:1);
+    terminal_print(tm, "Stop bits: %d\n", CSTOPB & tms->c_cflag ? 2 : 1);
 
     /* partiy check */
-    terminal_print(tm,"Parity: ");
-    if ( !(PARENB & tms->c_cflag) )
-        terminal_print(tm,"none\n");
-    else if (PARODD & tms->c_cflag )
-        terminal_print(tm,"odd\n");
+    terminal_print(tm, "Parity: ");
+    if (!(PARENB & tms->c_cflag))
+        terminal_print(tm, "none\n");
+    else if (PARODD & tms->c_cflag)
+        terminal_print(tm, "odd\n");
     else
-        terminal_print(tm,"even\n");
+        terminal_print(tm, "even\n");
 
     /* flow control */
-    terminal_print(tm,"Flow control: ");
+    terminal_print(tm, "Flow control: ");
     if ((IXON & tms->c_iflag) && (IXOFF & tms->c_iflag))
-        terminal_print(tm,"Xon\n");
+        terminal_print(tm, "Xon\n");
     else
-        terminal_print(tm,"none\n");
+        terminal_print(tm, "none\n");
 }

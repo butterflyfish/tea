@@ -36,60 +36,61 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "serial.h"
 #include "tea.h"
 
-#define TERMINAL_BUF_SIZE  512
+#define TERMINAL_BUF_SIZE 512
 
 /* receive from user input and write to serial port */
-typedef void (*aio_recv_t)(struct aev_loop *loop, aev_io *w, int evmask);
+typedef void (*aio_recv_t)(struct aev_loop* loop, aev_io* w, int evmask);
 
-struct terminal {
+struct terminal
+{
 
-    tea_t *tea;
+    tea_t* tea;
 
     unsigned char buf[TERMINAL_BUF_SIZE + 1];
-    int len;  /* length of data in buffer */
+    int len; /* length of data in buffer */
 
-    struct serial *ser;
-    aev_io ser_w;   /* serial port watcher */
+    struct serial* ser;
+    aev_io ser_w; /* serial port watcher */
 
-    int ifd, ofd;     /* reader/writer fd representing terminal */
-    aev_io term_w;   /* user reader watcher */
+    int ifd, ofd;  /* reader/writer fd representing terminal */
+    aev_io term_w; /* user reader watcher */
 
     int telnet; /* telnet state */
-    int cli; /* cli state */
+    int cli;    /* cli state */
 
     aio_recv_t aio_recv; /* receive handler */
 
-    struct aev_loop *loop;
+    struct aev_loop* loop;
 };
 
 /* read from controlling tty and then write to serial port */
 void
-tty_read (struct aev_loop *loop, aev_io *w, int evmask);
+tty_read(struct aev_loop* loop, aev_io* w, int evmask);
 
 /* write data in buffer tm->buf into serial port */
 int
-terminal_write_serial(struct terminal *tm);
+terminal_write_serial(struct terminal* tm);
 
 /* create a new terminal */
-struct terminal *
-new_terminal(tea_t *tea, char *name, int ifd, int ofd, aio_recv_t aio_recv);
+struct terminal*
+new_terminal(tea_t* tea, char* name, int ifd, int ofd, aio_recv_t aio_recv);
 
 /* connect new serial */
 int
-terminal_connect_serial(struct terminal *tm, char *name);
+terminal_connect_serial(struct terminal* tm, char* name);
 
 /* stop terminal and free it */
 void
-delete_terminal(struct terminal *tm);
+delete_terminal(struct terminal* tm);
 
 void
-terminal_print(struct terminal *tm, const char *fmt, ...);
+terminal_print(struct terminal* tm, const char* fmt, ...);
 
 /*
  * show setup information of serial port attached on terminal @tm
  * its output like utility stty
  */
 void
-terminal_show_serial_setting(struct terminal *tm);
+terminal_show_serial_setting(struct terminal* tm);
 
 #endif

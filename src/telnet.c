@@ -48,7 +48,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* interpreter as command */
 #define TELNET_IAC 255
 
-enum telnet_state {
+enum telnet_state
+{
     TELNET_STATE_DATA = 0,
     TELNET_STATE_IAC,
     TELNET_STATE_OPT,
@@ -56,19 +57,19 @@ enum telnet_state {
 };
 
 static void
-new_telnet_connection(struct aev_loop *loop, aev_io *w, int envmask);
-
+new_telnet_connection(struct aev_loop* loop, aev_io* w, int envmask);
 
 /* create tcp/udp socket and bind to ip/port */
 static int
-create_and_bind(const char *ip, const char * port, char istcp){
+create_and_bind(const char* ip, const char* port, char istcp)
+{
 
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int ret, fd;
     int yes = 1;
 
-    memset (&hints, 0, sizeof (struct addrinfo));
+    memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = istcp ? SOCK_STREAM : SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE;
@@ -81,39 +82,39 @@ create_and_bind(const char *ip, const char * port, char istcp){
 
     for (rp = result; rp; rp = rp->ai_next) {
         fd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-        if ( fd < 0 ) {
+        if (fd < 0) {
             perror("socket");
             continue;
         }
 
         if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes,
-                sizeof(int)) == -1) {
+                       sizeof(int)) == -1) {
             perror("setsockopt");
             close(fd);
             return -1;
         }
 
         ret = bind(fd, rp->ai_addr, rp->ai_addrlen);
-        if ( ret == 0)
+        if (ret == 0)
             break;
 
         perror("bind");
         close(fd);
     }
 
-    if (rp == NULL)
-    {
-      fprintf (stderr, "create_and_bind: could not bind\n");
-      return -1;
+    if (rp == NULL) {
+        fprintf(stderr, "create_and_bind: could not bind\n");
+        return -1;
     }
 
-    freeaddrinfo (result);
+    freeaddrinfo(result);
 
     return fd;
 }
 
 int
-start_telnet_server(tea_t *tea, const char *ip, const char * port) {
+start_telnet_server(tea_t* tea, const char* ip, const char* port)
+{
 
     int fd;
 
@@ -121,7 +122,7 @@ start_telnet_server(tea_t *tea, const char *ip, const char * port) {
     if (fd == -1)
         return -1;
 
-    if ( listen(fd, tea->backlog) < 0 ) {
+    if (listen(fd, tea->backlog) < 0) {
         perror("listen");
         return -1;
     }
@@ -134,28 +135,27 @@ start_telnet_server(tea_t *tea, const char *ip, const char * port) {
 static int
 send_negotiation(int fd)
 {
-    const char *negotiation =
-            "\xFF\xFB\x01"; // Will Echo
+    const char* negotiation =
+      "\xFF\xFB\x01"; // Will Echo
 
     return write(fd, negotiation, strlen(negotiation));
 }
 
 static void
-telnet_recv (struct aev_loop *loop, aev_io *w, int evmask){
+telnet_recv(struct aev_loop* loop, aev_io* w, int evmask)
+{
 
-    struct terminal *tm = w->data;
+    struct terminal* tm = w->data;
     unsigned char byte;
     int i;
     int len;
     int ret;
 
-
     /* why not read one byte each time ?
      * reduce system call for raw telent,telnet negotiation
      */
     len = read(tm->ifd, &tm->buf[tm->len], TERMINAL_BUF_SIZE - tm->len);
-    if( len <= 0 )
-    {
+    if (len <= 0) {
         fprintf(stderr, "close connection on fd %d\n", tm->ifd);
         delete_terminal(tm);
         return;
@@ -164,30 +164,30 @@ telnet_recv (struct aev_loop *loop, aev_io *w, int evmask){
     tm->len += len;
 
 input_label:
-    if ( tm->telnet == TELNET_STATE_NEGOTIATED ) {
+    if (tm->telnet == TELNET_STATE_NEGOTIATED) {
 
-        if ( len == 1) {
+        if (len == 1) {
             /* map DEL to Backspace */
             if (tm->buf[tm->len - 1] == 127) {
-                tm->buf[tm->len - 1 ] = 8;
+                tm->buf[tm->len - 1] = 8;
             }
 
-        } else if (tm->len >= 2 && tm->buf[tm->len-2] == '\r'
-                   && tm->buf[tm->len-1] == 0 ) {
+        } else if (tm->len >= 2 && tm->buf[tm->len - 2] == '\r' && tm->buf[tm->len - 1] == 0) {
 
             tm->len -= 1; /* remove string terminator */
         }
 
         /* echo */
-        if( tm->cli ) {
-            write(tm->ofd, tm->buf + tm->len -1, 1);
+        if (tm->cli) {
+            write(tm->ofd, tm->buf + tm->len - 1, 1);
             if (tm->buf[tm->len - 1] == '\r')
                 write(tm->ofd, "\n", 1);
         }
 
         ret = cli_process(tm);
         if (ret) {
-            if (ret < 0) delete_terminal(tm);
+            if (ret < 0)
+                delete_terminal(tm);
             return;
         }
 
@@ -198,14 +198,14 @@ input_label:
 
         byte = tm->buf[i];
 
-        switch(tm->telnet) {
+        switch (tm->telnet) {
 
             case TELNET_STATE_DATA:
-                if ( byte == TELNET_IAC ) {
+                if (byte == TELNET_IAC) {
 
                     tm->telnet = TELNET_STATE_IAC;
                     tm->len -= 1;
-                }else {
+                } else {
 
                     tm->telnet = TELNET_STATE_NEGOTIATED;
                 }
@@ -228,42 +228,43 @@ input_label:
             case TELNET_STATE_NEGOTIATED:
                 goto input_label;
 
-            default:break;
+            default:
+                break;
         }
     }
 }
 
 static void
-new_telnet_connection(struct aev_loop *loop, aev_io *w, int envmask){
+new_telnet_connection(struct aev_loop* loop, aev_io* w, int envmask)
+{
 
     struct sockaddr addr;
     socklen_t len = sizeof addr;
     char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
     int cfd;
     int ret;
-    tea_t *tea = w->data;
-    struct terminal *tm;
+    tea_t* tea = w->data;
+    struct terminal* tm;
     int val = 1;
 
-    cfd = accept (w->fd, &addr, &len);
-    ret = getnameinfo (&addr, len,
-                           hbuf, sizeof hbuf,
-                           sbuf, sizeof sbuf,
-                           NI_NUMERICHOST | NI_NUMERICSERV);
-    if (ret == 0)
-    {
+    cfd = accept(w->fd, &addr, &len);
+    ret = getnameinfo(&addr, len,
+                      hbuf, sizeof hbuf,
+                      sbuf, sizeof sbuf,
+                      NI_NUMERICHOST | NI_NUMERICSERV);
+    if (ret == 0) {
         fprintf(stderr, "Accepted connection on socket fd %d "
-             "(host=%s, port=%s)\n", cfd, hbuf, sbuf);
+                        "(host=%s, port=%s)\n",
+                cfd, hbuf, sbuf);
     }
 
     /* Set TCP keep alive option to detect dead peer */
-    if (setsockopt(cfd, SOL_SOCKET, SO_KEEPALIVE, &val, sizeof(val)) == -1)
-    {
+    if (setsockopt(cfd, SOL_SOCKET, SO_KEEPALIVE, &val, sizeof(val)) == -1) {
         fprintf(stderr, "setsockopt SO_KEEPALIVE: %s", strerror(errno));
         return;
     }
 
-    if (send_negotiation(cfd) < 0 ) {
+    if (send_negotiation(cfd) < 0) {
         fprintf(stderr, "Failed to send Telnet negotiation\n");
         close(cfd);
         return;

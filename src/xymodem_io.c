@@ -30,7 +30,6 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -44,23 +43,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "xymodem.h"
 
 static int
-openf(struct xymodem *xy, char *file){
+openf(struct xymodem* xy, char* file)
+{
 
     struct stat sbuf;
     off_t i;
-    uint8_t *buf;
+    uint8_t* buf;
 
     xy->fd = open(file, O_RDWR, 0);
 
     fstat(xy->fd, &sbuf);
 
-    if(sbuf.st_size % xy->mtu)
-        xy->size = (1 + sbuf.st_size/xy->mtu) * xy->mtu;
+    if (sbuf.st_size % xy->mtu)
+        xy->size = (1 + sbuf.st_size / xy->mtu) * xy->mtu;
     else
         xy->size = sbuf.st_size;
 
     /* map file to memory to speed up access */
-    xy->buf = mmap (0, xy->size, PROT_WRITE, MAP_SHARED, xy->fd, 0);
+    xy->buf = mmap(0, xy->size, PROT_WRITE, MAP_SHARED, xy->fd, 0);
     if (xy->buf == MAP_FAILED) {
         xy->log(xy->data, "mmap failed\n");
         return -1;
@@ -69,15 +69,16 @@ openf(struct xymodem *xy, char *file){
     /* assign pading CTRLZ */
     buf = xy->buf + sbuf.st_size;
     for (i = 0; i < xy->size - sbuf.st_size; ++i) {
-       buf[i] = CTRLZ;
+        buf[i] = CTRLZ;
     }
     return 0;
 }
 
 static int
-closef(struct xymodem *xy){
+closef(struct xymodem* xy)
+{
 
-    if (munmap (xy->buf, xy->size) < 0) {
+    if (munmap(xy->buf, xy->size) < 0) {
         xy->log(xy->data, "munmap failed\n");
         return -1;
     }
@@ -85,20 +86,23 @@ closef(struct xymodem *xy){
 }
 
 static uint8_t
-inbyte(struct xymodem *xy, int timeout){
+inbyte(struct xymodem* xy, int timeout)
+{
     uint8_t key;
-    read(xy->ttyfd, &key,1);
+    read(xy->ttyfd, &key, 1);
     return key;
 }
 
 static uint8_t
-outbyte(struct xymodem *xy, uint8_t byte){
-    write(xy->ttyfd, &byte,1);
+outbyte(struct xymodem* xy, uint8_t byte)
+{
+    write(xy->ttyfd, &byte, 1);
     return 0;
 }
 
 static int
-writepkt(struct xymodem *xy, uint8_t head[3], uint8_t sum[2]){
+writepkt(struct xymodem* xy, uint8_t head[3], uint8_t sum[2])
+{
     struct iovec vec[3];
 
     vec[0].iov_len = 3;
@@ -107,26 +111,28 @@ writepkt(struct xymodem *xy, uint8_t head[3], uint8_t sum[2]){
     vec[1].iov_len = xy->mtu;
     vec[1].iov_base = xy->offset + xy->buf;
 
-    vec[2].iov_len = xy->crc ? 2:1;
+    vec[2].iov_len = xy->crc ? 2 : 1;
     vec[2].iov_base = &sum[0];
 
-    return  writev(xy->ttyfd, vec, 3);
+    return writev(xy->ttyfd, vec, 3);
 }
 
 void
-processbar(struct xymodem *xy) {
+processbar(struct xymodem* xy)
+{
 #ifndef _XYMODEM_DEBUG_
 
-    xy->log(xy->data, "\rSending file %s .... %d%%",xy->filename,
-                (int)(xy->offset*100/xy->size));
+    xy->log(xy->data, "\rSending file %s .... %d%%", xy->filename,
+            (int)(xy->offset * 100 / xy->size));
 
-    if(xy->size == xy->offset)
+    if (xy->size == xy->offset)
         xy->log(xy->data, "\n");
 #endif
 }
 
 void
-xymodem_io_init(struct xymodem *xy, log_t log, void *data){
+xymodem_io_init(struct xymodem* xy, log_t log, void* data)
+{
 
     memset(xy, 0, sizeof(struct xymodem));
 

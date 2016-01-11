@@ -35,24 +35,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <termios.h>
 #include <sys/queue.h>
 
-struct serial {
+struct serial
+{
 
     struct termios attr;
 
     int fd;
     char name[50];
-    SLIST_ENTRY(serial) node;
+    SLIST_ENTRY(serial)
+    node;
 };
 
-
-enum ser_parity {
+enum ser_parity
+{
 
     SER_PARITY_NONE = 0,
-    SER_PARITY_ODD  = 1,
+    SER_PARITY_ODD = 1,
     SER_PARITY_EVEN = 2,
 };
 
-enum ser_flow_ctrl {
+enum ser_flow_ctrl
+{
     SER_FLOW_NONE = 0,
     SER_FLOW_XON,
 };
@@ -69,24 +72,24 @@ scan_serial(void);
 
 /* remove @ser from list built by scan_serial, and free it */
 void
-delete_serial(struct serial *ser);
+delete_serial(struct serial* ser);
 
 /*
  * open serial and load default value
  * return success(0) or error code
  */
 int
-open_serial(char *name, struct serial **ser);
+open_serial(char* name, struct serial** ser);
 
 /*
  * open one idle serial port
  * return success(0) or error code
  */
 int
-open_one_idle_serial( struct serial **ser );
+open_one_idle_serial(struct serial** ser);
 
 void
-close_serial(struct serial *ser);
+close_serial(struct serial* ser);
 
 void
 close_all_serials(void);
@@ -96,7 +99,7 @@ close_all_serials(void);
  * cb: callback function. stop iterating if it return 1
  */
 void
-iterate_serial_port( int (*cb)(struct serial *ser, void *data), void *data);
+iterate_serial_port(int (*cb)(struct serial* ser, void* data), void* data);
 
 /* translate literal baudrate to speed_t
  * @baudrate: literal baudrate,e.g. 115200
@@ -110,27 +113,26 @@ speed_to_baudrate(speed_t speed);
 
 /* update speed, but not apply to serial port */
 int
-serial_setup_speed(struct serial *ser, speed_t speed);
+serial_setup_speed(struct serial* ser, speed_t speed);
 
 /* change number of data bits */
 int
-serial_setup_csize(struct serial *ser, int number);
+serial_setup_csize(struct serial* ser, int number);
 
 /* change number of stopbits */
 int
-serial_setup_stopbits(struct serial *ser, int number);
+serial_setup_stopbits(struct serial* ser, int number);
 
 /* configure parity type */
 int
-serial_setup_parity(struct serial *ser, enum ser_parity p);
+serial_setup_parity(struct serial* ser, enum ser_parity p);
 
 /* set flow control type */
 int
-serial_setup_flowctrl(struct serial *ser, enum ser_flow_ctrl flow);
+serial_setup_flowctrl(struct serial* ser, enum ser_flow_ctrl flow);
 
 /* apply termios identified by ser->attr to serial port */
 int
-serial_apply_termios(struct serial *ser);
+serial_apply_termios(struct serial* ser);
 
 #endif
-

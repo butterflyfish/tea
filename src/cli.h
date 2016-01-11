@@ -37,10 +37,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * enable raw mode for controlling tty @ifd
  */
 int
-enable_raw_mode(struct terminal *tm);
+enable_raw_mode(struct terminal* tm);
 
 void
-disable_raw_mode(struct terminal *tm);
+disable_raw_mode(struct terminal* tm);
 
 /*
  * interactive shell
@@ -50,7 +50,6 @@ disable_raw_mode(struct terminal *tm);
  * jump to serial again if only pressing Enter key
  */
 int
-cli_process(struct terminal *tm);
-
+cli_process(struct terminal* tm);
 
 #endif

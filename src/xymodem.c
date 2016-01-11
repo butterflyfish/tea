@@ -68,13 +68,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "xymodem.h"
 
-
 /*
  * calculate crc16-ccitt very fast
  * plese refer to http://www.ccsinfo.com/forum/viewtopic.php?t=24977
  */
 static uint16_t
-crc16(const uint8_t *buf, uint16_t len)
+crc16(const uint8_t* buf, uint16_t len)
 {
     uint16_t x;
     uint16_t crc = 0;
@@ -88,21 +87,21 @@ crc16(const uint8_t *buf, uint16_t len)
 }
 
 static void
-cal_sum(struct xymodem *xy, uint8_t *sum) {
+cal_sum(struct xymodem* xy, uint8_t* sum)
+{
 
     uint16_t crc;
-    uint8_t *buf;
+    uint8_t* buf;
     int i;
 
     buf = xy->buf + xy->offset;
-    if(xy->crc == 1) {
+    if (xy->crc == 1) {
 
         crc = crc16(buf, xy->mtu);
-        sum[0] = (crc>>8) & 0xFF;
+        sum[0] = (crc >> 8) & 0xFF;
         sum[1] = crc & 0xFF;
-    }
-    else {
-        sum[0]=0;
+    } else {
+        sum[0] = 0;
         for (i = 0; i < xy->mtu; ++i) {
             sum[0] += buf[i];
         }
@@ -110,22 +109,23 @@ cal_sum(struct xymodem *xy, uint8_t *sum) {
 }
 
 static int
-xymodem_send(struct xymodem *xy)
+xymodem_send(struct xymodem* xy)
 {
     uint8_t key;
     uint8_t head[3];
     uint8_t sum[2];
     static uint8_t pktnum = 1;
 
-    switch(xy->state) {
+    switch (xy->state) {
 
         case XYMODEM_WAIT_START:
 
             xy->log(xy->data, "Wait for receiver to start ...\n");
-            key = xy->inbyte(xy,0);
+            key = xy->inbyte(xy, 0);
             if (key == 'C' || key == NAK) {
 
-                if (key == 'C') xy->crc = 1;
+                if (key == 'C')
+                    xy->crc = 1;
                 pktnum = 1;
                 xy->state = XYMODEM_SEND_PKT;
                 debug("jump to SEND-PKT state\n");
@@ -133,33 +133,33 @@ xymodem_send(struct xymodem *xy)
             } else if (key == CAN) {
 
                 debug("send ACK for received CAN\n");
-                xy->outbyte(xy,ACK);
+                xy->outbyte(xy, ACK);
                 xy->state = XYMODEM_DONE;
 
             } else {
 
-                xy->log(xy->data, "Received unexpected char:%x\n",key);
+                xy->log(xy->data, "Received unexpected char:%x\n", key);
                 return -1;
             }
             break;
 
         case XYMODEM_SEND_PKT:
 
-            head[0] = (xy->mtu == 128) ? SOH:STX;
+            head[0] = (xy->mtu == 128) ? SOH : STX;
             head[1] = pktnum;
             head[2] = ~pktnum;
 
-            cal_sum(xy,sum);
+            cal_sum(xy, sum);
 
-            debug("send %d pkt\n",pktnum);
+            debug("send %d pkt\n", pktnum);
             xy->writepkt(xy, head, sum);
 
-            key = xy->inbyte(xy,0);
+            key = xy->inbyte(xy, 0);
 
             if (key == ACK) {
                 debug("recv ACK for pkt %d\n", pktnum);
 
-                pktnum ++;
+                pktnum++;
                 xy->offset += xy->mtu;
 
                 if (xy->processbar)
@@ -168,16 +168,14 @@ xymodem_send(struct xymodem *xy)
                 if (xy->offset >= xy->size) {
                     xy->state = XYMODEM_SEND_EOT;
                 }
-            }
-            else if (key == NAK) {
+            } else if (key == NAK) {
                 debug("recv NAK\n");
-            }
-            else if (key == CAN) {
+            } else if (key == CAN) {
                 debug("send ACK for received CAN\n");
-                xy->outbyte(xy,ACK);
+                xy->outbyte(xy, ACK);
                 xy->state = XYMODEM_DONE;
-            }else {
-                xy->log(xy->data, "Received unexpected char:%x\n",key);
+            } else {
+                xy->log(xy->data, "Received unexpected char:%x\n", key);
                 return -1;
             }
             break;
@@ -185,9 +183,9 @@ xymodem_send(struct xymodem *xy)
         case XYMODEM_SEND_EOT:
 
             debug("send EOT\n");
-            xy->outbyte(xy,EOT);
+            xy->outbyte(xy, EOT);
 
-            key=xy->inbyte(xy,0);
+            key = xy->inbyte(xy, 0);
             if (key == ACK) {
                 debug("recv ACK for EOT\n");
                 xy->state = XYMODEM_DONE;
@@ -206,23 +204,22 @@ xymodem_send(struct xymodem *xy)
     return 0;
 }
 
-
 int
-xymodem_send_file(struct xymodem *xy, int mtu, int ttyfd, char *filename){
+xymodem_send_file(struct xymodem* xy, int mtu, int ttyfd, char* filename)
+{
 
     int ret = 0;
     int flags;
 
-    if ( xy->openf == NULL || xy->closef == NULL ||
+    if (xy->openf == NULL || xy->closef == NULL ||
         xy->inbyte == NULL || xy->outbyte == NULL ||
         xy->writepkt == NULL) {
         fprintf(stderr, "Either of openf,closef,inbyte,outbyte,writepkt can not be NULL\n");
         return -1;
     }
 
-
-    if (mtu != 128 && mtu != 1024){
-        fprintf(stderr, "MTU must be 128 or 1024") ;
+    if (mtu != 128 && mtu != 1024) {
+        fprintf(stderr, "MTU must be 128 or 1024");
         return -1;
     }
 
@@ -236,7 +233,7 @@ xymodem_send_file(struct xymodem *xy, int mtu, int ttyfd, char *filename){
     xy->ttyfd = ttyfd;
 
     xy->filename = filename;
-    xy->openf(xy,filename);
+    xy->openf(xy, filename);
 
     while (1) {
 

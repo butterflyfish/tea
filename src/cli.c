@@ -42,39 +42,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "serial.h"
 #include "tea.h"
 
-enum cli_state {
+enum cli_state
+{
     CLI_ENTER = 0,
     CLI_IN,
 };
 
 /* cli command */
-struct command {
+struct command
+{
 
-     const char *name;
-     int (*func)(struct terminal *tm, int argc, char **argv);
-     const char *params;
-     const char *summary;
-
+    const char* name;
+    int (*func)(struct terminal* tm, int argc, char** argv);
+    const char* params;
+    const char* summary;
 };
 
 static struct termios termios_origin;
 
 struct command cmdtbl[];
 
-
 static int
-cmd_quit(struct terminal *tm, int argc, char **argv){
+cmd_quit(struct terminal* tm, int argc, char** argv)
+{
 
     return 0;
 }
 
 static int
-cmd_help(struct terminal *tm, int argc, char **argv){
+cmd_help(struct terminal* tm, int argc, char** argv)
+{
 
-    struct command *cmd;
-    int i=0;
+    struct command* cmd;
+    int i = 0;
 
-    for(cmd = &cmdtbl[0]; cmd->name; cmd = &cmdtbl[++i]) {
+    for (cmd = &cmdtbl[0]; cmd->name; cmd = &cmdtbl[++i]) {
 
         terminal_print(tm, "\r\n  \x1b[1m%s\x1b[0m \x1b[90m%s\x1b[0m\r\n", cmd->name, cmd->params);
         terminal_print(tm, "  \x1b[33msummary:\x1b[0m %s\r\n", cmd->summary);
@@ -84,20 +86,21 @@ cmd_help(struct terminal *tm, int argc, char **argv){
 }
 
 static int
-cmd_kermit_send(struct terminal *tm, int argc, char **argv){
+cmd_kermit_send(struct terminal* tm, int argc, char** argv)
+{
 
-    if ( argc != 2 )
+    if (argc != 2)
         return -1;
 
-    if ( kermit_send_file(tm->ser->fd, &argv[1], (klog_t)terminal_print, tm) )
+    if (kermit_send_file(tm->ser->fd, &argv[1], (klog_t)terminal_print, tm))
         terminal_print(tm, "send file failed!\n");
 
     return 0;
 }
 
-
 static void
-_xymodem_send_file(struct terminal *tm, int mtu, char *file){
+_xymodem_send_file(struct terminal* tm, int mtu, char* file)
+{
     int flags;
     struct xymodem xy;
 
@@ -105,16 +108,17 @@ _xymodem_send_file(struct terminal *tm, int mtu, char *file){
     flags = fcntl(tm->ser->fd, F_GETFL, 0);
     fcntl(tm->ser->fd, F_SETFL, flags & ~O_NONBLOCK);
 
-    if ( xymodem_send_file(&xy, mtu, tm->ser->fd, file) )
+    if (xymodem_send_file(&xy, mtu, tm->ser->fd, file))
         terminal_print(tm, "send file failed!\n");
 
     fcntl(tm->ser->fd, F_SETFL, flags | O_NONBLOCK);
 }
 
 static int
-cmd_xmodem_send(struct terminal *tm, int argc, char **argv){
+cmd_xmodem_send(struct terminal* tm, int argc, char** argv)
+{
 
-    if ( argc != 2 )
+    if (argc != 2)
         return -1;
 
     _xymodem_send_file(tm, 128, argv[1]);
@@ -123,9 +127,10 @@ cmd_xmodem_send(struct terminal *tm, int argc, char **argv){
 }
 
 static int
-cmd_ymodem_send(struct terminal *tm, int argc, char **argv){
+cmd_ymodem_send(struct terminal* tm, int argc, char** argv)
+{
 
-    if ( argc != 2 )
+    if (argc != 2)
         return -1;
 
     _xymodem_send_file(tm, 1024, argv[1]);
@@ -134,37 +139,41 @@ cmd_ymodem_send(struct terminal *tm, int argc, char **argv){
 }
 
 static int
-cmd_show(struct terminal *tm, int argc, char **argv){
+cmd_show(struct terminal* tm, int argc, char** argv)
+{
 
     terminal_show_serial_setting(tm);
     return 0;
 }
 
 static int
-print_serial_ports(struct serial *ser, void *data){
-    struct terminal *tm = (struct terminal *)data;
+print_serial_ports(struct serial* ser, void* data)
+{
+    struct terminal* tm = (struct terminal*)data;
 
-    if (!strcmp(tm->ser->name, ser->name)) /* current serial port */
-            terminal_print(tm, "\033[1;32m%s\033[0m\n", ser->name); /* green color */
-    else if (ser->fd) /* connected by other terminal */
-            terminal_print(tm, "\033[1;31m%s\033[0m\n", ser->name); /* red color */
+    if (!strcmp(tm->ser->name, ser->name))                      /* current serial port */
+        terminal_print(tm, "\033[1;32m%s\033[0m\n", ser->name); /* green color */
+    else if (ser->fd)                                           /* connected by other terminal */
+        terminal_print(tm, "\033[1;31m%s\033[0m\n", ser->name); /* red color */
     else
-            terminal_print(tm, "%s\n", ser->name);
+        terminal_print(tm, "%s\n", ser->name);
 
     return 0;
 }
 
 static int
-cmd_list(struct terminal *tm, int argc, char **argv){
+cmd_list(struct terminal* tm, int argc, char** argv)
+{
 
     iterate_serial_port(print_serial_ports, tm);
     return 0;
 }
 
 static int
-cmd_connect(struct terminal *tm, int argc, char **argv){
+cmd_connect(struct terminal* tm, int argc, char** argv)
+{
 
-    if ( argc != 2 )
+    if (argc != 2)
         return -1;
 
     if (!strcmp(argv[1], tm->ser->name))
@@ -176,15 +185,16 @@ cmd_connect(struct terminal *tm, int argc, char **argv){
 }
 
 static int
-cmd_speed(struct terminal *tm, int argc, char **argv){
+cmd_speed(struct terminal* tm, int argc, char** argv)
+{
 
     speed_t speed;
 
-    if ( argc != 2 )
+    if (argc != 2)
         return -1;
 
     speed = baudrate_to_speed(atoi(argv[1]));
-    if ( speed == 0 ) {
+    if (speed == 0) {
         terminal_print(tm, "illegal baudrate \x1b[33m%s\x1b[0m\n", argv[1]);
         return 0;
     }
@@ -196,15 +206,16 @@ cmd_speed(struct terminal *tm, int argc, char **argv){
 }
 
 static int
-cmd_csize(struct terminal *tm, int argc, char **argv){
+cmd_csize(struct terminal* tm, int argc, char** argv)
+{
 
     int cs;
 
-    if ( argc != 2 )
+    if (argc != 2)
         return -1;
 
     cs = atoi(argv[1]);
-    if ( serial_setup_csize(tm->ser, cs) < 0 ) {
+    if (serial_setup_csize(tm->ser, cs) < 0) {
         terminal_print(tm, "illegal csize \x1b[33m%s\x1b[0m\n", argv[1]);
         return 0;
     }
@@ -215,15 +226,16 @@ cmd_csize(struct terminal *tm, int argc, char **argv){
 }
 
 static int
-cmd_stopbits(struct terminal *tm, int argc, char **argv){
+cmd_stopbits(struct terminal* tm, int argc, char** argv)
+{
 
     int stopbits;
 
-    if ( argc != 2 )
+    if (argc != 2)
         return -1;
 
     stopbits = atoi(argv[1]);
-    if ( serial_setup_stopbits(tm->ser, stopbits) < 0 ) {
+    if (serial_setup_stopbits(tm->ser, stopbits) < 0) {
         terminal_print(tm, "illegal stopbits \x1b[33m%s\x1b[0m\n", argv[1]);
         return 0;
     }
@@ -234,11 +246,12 @@ cmd_stopbits(struct terminal *tm, int argc, char **argv){
 }
 
 static int
-cmd_parity(struct terminal *tm, int argc, char **argv){
+cmd_parity(struct terminal* tm, int argc, char** argv)
+{
 
     enum ser_parity p;
 
-    if ( argc != 2 )
+    if (argc != 2)
         return -1;
 
     if (0 == strcmp(argv[1], "even"))
@@ -259,11 +272,12 @@ cmd_parity(struct terminal *tm, int argc, char **argv){
 }
 
 static int
-cmd_flow(struct terminal *tm, int argc, char **argv){
+cmd_flow(struct terminal* tm, int argc, char** argv)
+{
 
     enum ser_flow_ctrl flow;
 
-    if ( argc != 2 )
+    if (argc != 2)
         return -1;
 
     if (0 == strcmp(argv[1], "xon"))
@@ -281,37 +295,37 @@ cmd_flow(struct terminal *tm, int argc, char **argv){
     return 0;
 }
 
-
 static int
-cli_exec(struct terminal *tm, char *buf) {
+cli_exec(struct terminal* tm, char* buf)
+{
 
-    #define MAX_ARGC 5
-    char *argv[MAX_ARGC] = {0};
-    char *sep = " \t\r\n";
-    char *token;
-    int argc=0;
-    struct command *cmd;
-    int i=0;
+#define MAX_ARGC 5
+    char* argv[MAX_ARGC] = { 0 };
+    char* sep = " \t\r\n";
+    char* token;
+    int argc = 0;
+    struct command* cmd;
+    int i = 0;
     int ret;
 
     token = strtok(buf, sep);
-    while( (token != NULL) && (argc <= MAX_ARGC) )  {
+    while ((token != NULL) && (argc <= MAX_ARGC)) {
 
         argv[argc] = token;
         /* printf("argv[%d] is %s\n", argc, argv[argc]); */
         argc++;
 
-        token= strtok(NULL,sep);
+        token = strtok(NULL, sep);
     }
 
-    if ( !strcmp(argv[0], "quit") )
+    if (!strcmp(argv[0], "quit"))
         return -1;
 
-    for(cmd = &cmdtbl[0]; cmd->name; cmd = &cmdtbl[i++]) {
+    for (cmd = &cmdtbl[0]; cmd->name; cmd = &cmdtbl[i++]) {
 
-        if ( 0 == strcmp(cmd->name, argv[0]) ) {
+        if (0 == strcmp(cmd->name, argv[0])) {
             ret = cmd->func(tm, argc, argv);
-            if ( ret < 0 && cmd->params)
+            if (ret < 0 && cmd->params)
                 terminal_print(tm, "\x1b[33mSYNOPSIS:\x1b[0m %s %s\n", cmd->name, cmd->params);
 
             return 0;
@@ -330,10 +344,10 @@ cli_exec(struct terminal *tm, char *buf) {
  * input is assembled into lines and special characters are processed.
  */
 int
-enable_raw_mode(struct terminal *tm)
+enable_raw_mode(struct terminal* tm)
 {
     struct termios raw;
-    if ( !isatty(tm->ifd) )
+    if (!isatty(tm->ifd))
         return -1;
 
     tcgetattr(tm->ifd, &termios_origin);
@@ -367,9 +381,9 @@ enable_raw_mode(struct terminal *tm)
 }
 
 void
-disable_raw_mode(struct terminal *tm)
+disable_raw_mode(struct terminal* tm)
 {
-    if ( isatty(tm->ifd) )
+    if (isatty(tm->ifd))
         tcsetattr(tm->ifd, TCSAFLUSH, &termios_origin);
 }
 
@@ -379,18 +393,18 @@ disable_raw_mode(struct terminal *tm)
  *      true: processing; false: finished
  */
 int
-cli_process(struct terminal *tm)
+cli_process(struct terminal* tm)
 {
     int ret = 1;
 
     /* tm->buf[tm->len] = 0; */
     /* fprintf(stderr, "buf[len=%d] is %s\n", tm->len, tm->buf); */
 
-    switch(tm->cli) {
+    switch (tm->cli) {
 
         case CLI_ENTER:
 
-            if ( tm->buf[tm->len - 1] != TEA_ESC_KEY ) {
+            if (tm->buf[tm->len - 1] != TEA_ESC_KEY) {
                 ret = 0;
                 break;
             }
@@ -406,7 +420,7 @@ cli_process(struct terminal *tm)
             break;
 
         case CLI_IN:
-            if (tm->buf[tm->len-1] == 8) { /* backsapce */
+            if (tm->buf[tm->len - 1] == 8) { /* backsapce */
                 tm->len -= 2;
                 break;
             }
@@ -427,14 +441,15 @@ cli_process(struct terminal *tm)
             }
 
             tm->buf[tm->len] = 0;
-            if ( cli_exec(tm, (char*)tm->buf) ){
+            if (cli_exec(tm, (char*)tm->buf)) {
                 return -1;
             }
             tm->len = 0;
             terminal_print(tm, "\rTea> ");
             break;
 
-        default:break;
+        default:
+            break;
     }
 
     return ret;
@@ -442,20 +457,18 @@ cli_process(struct terminal *tm)
 
 struct command cmdtbl[] = {
 
-    {"quit",    cmd_quit, "",   "Exit Tea!"},
-    {"help",    cmd_help,   "",  "Display what you are seeing"},
-    {"show",    cmd_show,   "",  "Show current configuration"},
-    {"list",    cmd_list,   "",  "List serial port"},
-    {"connect", cmd_connect,   "<serial port name>",  "Connect serial port"},
-    {"speed",   cmd_speed,   "<baudrate>",  "Change baudrate,.e.g 115200"},
-    {"csize",   cmd_csize,   "<csize>",  "Change number of data bit,.e.g 7"},
-    {"stopbits",cmd_stopbits,   "<stopbits>",  "Change number of stop bit to 1 or 2"},
-    {"parity",  cmd_parity,   "<parity type>",  "Change parity type to none|even|odd"},
-    {"flow",    cmd_flow,   "<flow type>",  "Change flow type to none|xon"},
-    {"ks",      cmd_kermit_send, "<file>", "Send file using Kermit"},
-    {"xs",      cmd_ymodem_send, "<file>", "Send file using Xmodem. Data size is 128B"},
-    {"ys",      cmd_ymodem_send, "<file>", "Send file using Ymodem. Data size is 1024B"},
-    {NULL, NULL, NULL}
+    { "quit", cmd_quit, "", "Exit Tea!" },
+    { "help", cmd_help, "", "Display what you are seeing" },
+    { "show", cmd_show, "", "Show current configuration" },
+    { "list", cmd_list, "", "List serial port" },
+    { "connect", cmd_connect, "<serial port name>", "Connect serial port" },
+    { "speed", cmd_speed, "<baudrate>", "Change baudrate,.e.g 115200" },
+    { "csize", cmd_csize, "<csize>", "Change number of data bit,.e.g 7" },
+    { "stopbits", cmd_stopbits, "<stopbits>", "Change number of stop bit to 1 or 2" },
+    { "parity", cmd_parity, "<parity type>", "Change parity type to none|even|odd" },
+    { "flow", cmd_flow, "<flow type>", "Change flow type to none|xon" },
+    { "ks", cmd_kermit_send, "<file>", "Send file using Kermit" },
+    { "xs", cmd_ymodem_send, "<file>", "Send file using Xmodem. Data size is 128B" },
+    { "ys", cmd_ymodem_send, "<file>", "Send file using Ymodem. Data size is 1024B" },
+    { NULL, NULL, NULL }
 };
-
-

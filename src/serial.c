@@ -42,28 +42,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #include "serial.h"
 
+static SLIST_HEAD(, serial) serial_head;
 
-static SLIST_HEAD(,serial) serial_head;
-
-static struct {
+static struct
+{
     speed_t speed;
     int baudrate;
-} ser_speed[ ] = {
-    {B0,       0},
-    {B300,     300},
-    {B1200,    1200},
-    {B2400,    2400},
-    {B4800,    4800},
-    {B9600,    9600},
-    {B19200,   19200},
-    {B38400,   38400},
-    {B57600,   57600},
-    {B115200,  115200},
-    {B230400,  230400},
+} ser_speed[] = {
+    { B0, 0 },
+    { B300, 300 },
+    { B1200, 1200 },
+    { B2400, 2400 },
+    { B4800, 4800 },
+    { B9600, 9600 },
+    { B19200, 19200 },
+    { B38400, 38400 },
+    { B57600, 57600 },
+    { B115200, 115200 },
+    { B230400, 230400 },
 };
 
-
-static char * match_name[] = {
+static char* match_name[] = {
     "tty.usbserial",
     "ttyS",
     "ttyUSB",
@@ -71,12 +70,12 @@ static char * match_name[] = {
 };
 
 static int
-match_serial(const struct dirent *entry)
+match_serial(const struct dirent* entry)
 {
     int i;
 
-    for (i=0; i < sizeof(match_name)/sizeof(match_name[0]); i++) {
-        if ( !strncmp(entry->d_name, match_name[i], strlen(match_name[i])) )
+    for (i = 0; i < sizeof(match_name) / sizeof(match_name[0]); i++) {
+        if (!strncmp(entry->d_name, match_name[i], strlen(match_name[i])))
             return 1;
     }
 
@@ -87,9 +86,9 @@ match_serial(const struct dirent *entry)
 * add serial port to list
 */
 static int
-add_serial(const char *name)
+add_serial(const char* name)
 {
-    struct serial *serial;
+    struct serial* serial;
 
     serial = malloc(sizeof *serial);
     if (serial == NULL) {
@@ -105,15 +104,15 @@ add_serial(const char *name)
 }
 
 static int
-_open(char *name) {
+_open(char* name)
+{
 
     char path[255];
 
-    sprintf(path, "%s%s", strncmp(name, "/dev/", sizeof "/dev/" - 1) ?
-            "/dev/" : "", name);
+    sprintf(path, "%s%s", strncmp(name, "/dev/", sizeof "/dev/" - 1) ? "/dev/" : "", name);
 
     /* O_NOCTTY: the port never becomes controlling terminal of the process */
-    return open(path, O_RDWR|O_NONBLOCK|O_NOCTTY, 0640);
+    return open(path, O_RDWR | O_NONBLOCK | O_NOCTTY, 0640);
 }
 
 /*
@@ -128,7 +127,7 @@ scan_serial(void)
 {
     int n;
     int ret = 0;
-    struct dirent **list;
+    struct dirent** list;
 
     int fd;
     struct termios attr;
@@ -138,7 +137,7 @@ scan_serial(void)
 
     /* Scan through dir - it contains all tty-devices in the system */
     n = scandir("/dev/", &list, match_serial, NULL);
-    if ( n<0 ) {
+    if (n < 0) {
         perror("scandir");
         exit(-1);
     } else {
@@ -149,11 +148,11 @@ scan_serial(void)
             fd = _open(list[n]->d_name);
             if (fd > 0) {
 
-                if ( 0 == tcgetattr(fd, &attr) ) {
+                if (0 == tcgetattr(fd, &attr)) {
 
                     /* printf("add serial port %s\n", list[n]->d_name); */
                     add_serial(list[n]->d_name);
-                    ret ++;
+                    ret++;
                 }
                 close(fd);
             }
@@ -169,51 +168,50 @@ scan_serial(void)
  * open serial and load default value
  */
 int
-open_serial(char *name, struct serial **ser)
+open_serial(char* name, struct serial** ser)
 {
     int fd;
-    struct serial *serial = NULL;
-    struct termios *attr;
+    struct serial* serial = NULL;
+    struct termios* attr;
     struct flock lock, savelock;
 
     fd = _open(name);
-    if ( fd < 0 )
+    if (fd < 0)
         return fd;
 
-    lock.l_type= F_WRLCK;
+    lock.l_type = F_WRLCK;
     lock.l_start = 0;
     lock.l_whence = SEEK_SET;
-    lock.l_len =0;
+    lock.l_len = 0;
     savelock = lock;
     fcntl(fd, F_GETLK, &lock);
 
-    if (lock.l_type == F_WRLCK || lock.l_type == F_RDLCK)
-    {
+    if (lock.l_type == F_WRLCK || lock.l_type == F_RDLCK) {
         /* printf("Process %d lock %s already!\n", lock.l_pid, name); */
         return -EBUSY;
     } else {
         fcntl(fd, F_SETLK, &savelock);
     }
 
-    SLIST_FOREACH(serial, &serial_head, node){
+    SLIST_FOREACH(serial, &serial_head, node)
+    {
         if (!strncmp(name, "/dev/", 5))
             name += 5;
-        if (!strcmp(name, serial->name)){
+        if (!strcmp(name, serial->name)) {
 
-                if (serial->fd)
-                    return -EBUSY;
+            if (serial->fd)
+                return -EBUSY;
 
-                serial->fd = fd;
-                attr = &serial->attr;
-                break;
+            serial->fd = fd;
+            attr = &serial->attr;
+            break;
         }
     }
 
     if (!serial)
         return -ENOENT;
 
-    if (tcgetattr(fd, attr))
-    {
+    if (tcgetattr(fd, attr)) {
         perror("tcgetattr");
         return -errno;
     }
@@ -238,28 +236,31 @@ open_serial(char *name, struct serial **ser)
 }
 
 void
-delete_serial(struct serial *ser) {
+delete_serial(struct serial* ser)
+{
 
     SLIST_REMOVE(&serial_head, ser, serial, node);
     free(ser);
 }
 
 int
-open_one_idle_serial( struct serial **ser )
+open_one_idle_serial(struct serial** ser)
 {
-    struct serial *serial;
+    struct serial* serial;
     int ret = -ENOENT;
 
-    SLIST_FOREACH(serial, &serial_head, node) {
+    SLIST_FOREACH(serial, &serial_head, node)
+    {
         ret = open_serial(serial->name, ser);
-        if ( 0 == ret )
+        if (0 == ret)
             return 0;
     }
     return ret;
 }
 
 void
-close_serial(struct serial *ser) {
+close_serial(struct serial* ser)
+{
 
     close(ser->fd);
     ser->fd = 0;
@@ -268,24 +269,29 @@ close_serial(struct serial *ser) {
 void
 close_all_serials(void)
 {
-    struct serial *serial;
+    struct serial* serial;
 
-    SLIST_FOREACH(serial, &serial_head, node){
+    SLIST_FOREACH(serial, &serial_head, node)
+    {
         close_serial(serial);
     }
 }
 
 void
-iterate_serial_port(int (*cb)(struct serial *ser, void *data), void *data) {
+iterate_serial_port(int (*cb)(struct serial* ser, void* data), void* data)
+{
 
-    struct serial *serial;
+    struct serial* serial;
     int ret;
 
-    if (!cb) return;
+    if (!cb)
+        return;
 
-    SLIST_FOREACH(serial, &serial_head, node){
+    SLIST_FOREACH(serial, &serial_head, node)
+    {
         ret = cb(serial, data);
-        if (ret) break;
+        if (ret)
+            break;
     }
 }
 
@@ -294,7 +300,7 @@ speed_to_baudrate(speed_t speed)
 {
     int i = 0;
 
-    for( i=0; i<sizeof(ser_speed)/sizeof(ser_speed[0]); i++ )
+    for (i = 0; i < sizeof(ser_speed) / sizeof(ser_speed[0]); i++)
         if (speed == ser_speed[i].speed)
             return ser_speed[i].baudrate;
 
@@ -306,7 +312,7 @@ baudrate_to_speed(int baudrate)
 {
     int i = 0;
 
-    for( i=0; i<sizeof(ser_speed)/sizeof(ser_speed[0]); i++ )
+    for (i = 0; i < sizeof(ser_speed) / sizeof(ser_speed[0]); i++)
         if (baudrate == ser_speed[i].baudrate)
             return ser_speed[i].speed;
 
@@ -314,38 +320,49 @@ baudrate_to_speed(int baudrate)
 }
 
 int
-serial_setup_speed(struct serial *ser, speed_t speed) {
+serial_setup_speed(struct serial* ser, speed_t speed)
+{
 
     return cfsetspeed(&ser->attr, speed);
 }
 
 int
-serial_setup_csize(struct serial *ser, int number){
+serial_setup_csize(struct serial* ser, int number)
+{
     int cs;
 
-    if ( number < 5 || number > 8 )
+    if (number < 5 || number > 8)
         return -1;
 
-    switch(number) {
-        case 5: cs=CS5;break;
-        case 6: cs=CS6;break;
-        case 7: cs=CS7;break;
-        case 8: cs=CS8;break;
+    switch (number) {
+        case 5:
+            cs = CS5;
+            break;
+        case 6:
+            cs = CS6;
+            break;
+        case 7:
+            cs = CS7;
+            break;
+        case 8:
+            cs = CS8;
+            break;
     }
 
-    ser->attr.c_cflag &=  ~CSIZE;
-    ser->attr.c_cflag |=  cs;
+    ser->attr.c_cflag &= ~CSIZE;
+    ser->attr.c_cflag |= cs;
 
     return 0;
 }
 
 int
-serial_setup_stopbits(struct serial *ser, int number){
+serial_setup_stopbits(struct serial* ser, int number)
+{
 
-    if ( number !=1 && number != 2 )
+    if (number != 1 && number != 2)
         return -1;
 
-    if ( number == 1)
+    if (number == 1)
         ser->attr.c_cflag &= ~CSTOPB;
     else
         ser->attr.c_cflag |= CSTOPB;
@@ -354,9 +371,10 @@ serial_setup_stopbits(struct serial *ser, int number){
 }
 
 int
-serial_setup_parity(struct serial *ser, enum ser_parity p) {
+serial_setup_parity(struct serial* ser, enum ser_parity p)
+{
 
-    struct termios *tms = &ser->attr;
+    struct termios* tms = &ser->attr;
 
     switch (p) {
 
@@ -365,7 +383,7 @@ serial_setup_parity(struct serial *ser, enum ser_parity p) {
             break;
 
         case SER_PARITY_ODD:
-            tms->c_cflag |= PARENB|PARODD;
+            tms->c_cflag |= PARENB | PARODD;
             break;
 
         case SER_PARITY_EVEN:
@@ -373,19 +391,21 @@ serial_setup_parity(struct serial *ser, enum ser_parity p) {
             tms->c_cflag |= PARENB;
             break;
 
-        default: return -1;
+        default:
+            return -1;
     }
     return 0;
 }
 
 int
-serial_setup_flowctrl(struct serial *ser, enum ser_flow_ctrl flow) {
+serial_setup_flowctrl(struct serial* ser, enum ser_flow_ctrl flow)
+{
 
-    struct termios *tms = &ser->attr;
+    struct termios* tms = &ser->attr;
 
     switch (flow) {
         case SER_FLOW_XON:
-            tms->c_iflag |= IXON|IXOFF;
+            tms->c_iflag |= IXON | IXOFF;
             break;
         case SER_FLOW_NONE:
             tms->c_iflag &= ~IXON;
@@ -398,7 +418,8 @@ serial_setup_flowctrl(struct serial *ser, enum ser_flow_ctrl flow) {
 }
 
 int
-serial_apply_termios(struct serial *ser) {
+serial_apply_termios(struct serial* ser)
+{
 
     return tcsetattr(ser->fd, TCSAFLUSH, &ser->attr);
 }

@@ -39,9 +39,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tea.h"
 #include "telnet.h"
 
-static char *ver = "developing";
+static char* ver = "developing";
 
-static tea_t  tea = {
+static tea_t tea = {
 
     .port = 23,
     .backlog = 10,
@@ -53,8 +53,8 @@ static tea_t  tea = {
     .flow = SER_FLOW_NONE,
 };
 
-static
-void usage()
+static void
+usage()
 {
     fprintf(stderr,
             "Usage: tea [options]\n\n"
@@ -68,34 +68,32 @@ void usage()
             "--bits|-b <5|6|7|8>:      The number of data bits. Default is 8\n"
             "--stopbits|-t <1|2>:      The number of stop bit. Default is 1\n"
             "--parity|-p <odd|even>:   Parity setting. Default is none\n"
-            "--flow|-f <xon>:          Flow control type. Default is none\n"
-    );
-
+            "--flow|-f <xon>:          Flow control type. Default is none\n");
 }
 
 static void
-create_pid_file(void) {
+create_pid_file(void)
+{
 
     int fd;
-    FILE *pidfile;
+    FILE* pidfile;
     struct flock lock, savelock;
 
-    fd = open(TEA_PID_FILE, O_RDWR|O_CREAT, 0640);
-    if ( fd < 0 ) {
+    fd = open(TEA_PID_FILE, O_RDWR | O_CREAT, 0640);
+    if (fd < 0) {
         fprintf(stderr, "failed to create pid file:%s\n", strerror(errno));
         exit(1);
     }
 
-    lock.l_type= F_WRLCK;
+    lock.l_type = F_WRLCK;
     lock.l_start = 0;
     lock.l_whence = SEEK_SET;
-    lock.l_len =0;
+    lock.l_len = 0;
 
     savelock = lock;
     fcntl(fd, F_GETLK, &lock);
 
-    if (lock.l_type == F_WRLCK)
-    {
+    if (lock.l_type == F_WRLCK) {
         fprintf(stderr, "Another Tea instance(pid=%d) is running\n", lock.l_pid);
         exit(1);
     } else {
@@ -109,7 +107,8 @@ create_pid_file(void) {
     fflush(pidfile);
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char* argv[])
 {
     int number;
     int pid;
@@ -120,113 +119,110 @@ int main(int argc, char *argv[])
 
     int version = 0;
     int telnet = 0;
-    char *device = NULL;
+    char* device = NULL;
 
     struct option long_options[] = {
 
-        {"version", no_argument,       &version, 1},
-        {"telnet", no_argument,       &telnet, 1},
-        {"port",   required_argument,    0, 'n'},
-        {"help",    no_argument,       0, 'h'},
-        {"device",  required_argument, 0, 'd'},
-        {"speed",   required_argument, 0, 's'},
-        {"bits",   required_argument, 0, 'b'},
-        {"stopbits",   required_argument, 0, 't'},
-        {"parity",   required_argument, 0, 'p'},
-        {"flow",   required_argument, 0, 'f'},
-        {"forground",   no_argument, &forground, 1},
-        {0, 0, 0, 0}
+        { "version", no_argument, &version, 1 },
+        { "telnet", no_argument, &telnet, 1 },
+        { "port", required_argument, 0, 'n' },
+        { "help", no_argument, 0, 'h' },
+        { "device", required_argument, 0, 'd' },
+        { "speed", required_argument, 0, 's' },
+        { "bits", required_argument, 0, 'b' },
+        { "stopbits", required_argument, 0, 't' },
+        { "parity", required_argument, 0, 'p' },
+        { "flow", required_argument, 0, 'f' },
+        { "forground", no_argument, &forground, 1 },
+        { 0, 0, 0, 0 }
     };
-
 
     while (1) {
 
-         c = getopt_long (argc, argv, "hd:s:b:t:p:f:",
-                          long_options, &option_index);
+        c = getopt_long(argc, argv, "hd:s:b:t:p:f:",
+                        long_options, &option_index);
 
         /* Detect the end of the options. */
         if (c == -1)
             break;
 
         switch (c) {
-        case 0:
-        if (version) {
-            fprintf (stderr, "Version is %s\n", ver);
-            exit(1);
-        }
-        break;
+            case 0:
+                if (version) {
+                    fprintf(stderr, "Version is %s\n", ver);
+                    exit(1);
+                }
+                break;
 
-        case 'h':
-        usage();
-        exit(1);
+            case 'h':
+                usage();
+                exit(1);
 
-        case 'n':
-        tea.port = atoi(optarg);
-        break;
+            case 'n':
+                tea.port = atoi(optarg);
+                break;
 
-        case 'd':
-        device = optarg;
-        break;
+            case 'd':
+                device = optarg;
+                break;
 
-        case 's':
-        tea.speed = baudrate_to_speed(atoi(optarg));
-        if ( tea.speed == 0 ) {
-            fprintf(stderr, "Illegal baudrate\n");
-            exit(1);
-        }
-        break;
+            case 's':
+                tea.speed = baudrate_to_speed(atoi(optarg));
+                if (tea.speed == 0) {
+                    fprintf(stderr, "Illegal baudrate\n");
+                    exit(1);
+                }
+                break;
 
-        case 'b':
-        tea.cs = atoi(optarg);
-        if ( tea.cs < 5 || tea.cs> 8 ) {
-            fprintf(stderr, "number of data bits is illegal\n");
-            exit(1);
-        }
-        break;
+            case 'b':
+                tea.cs = atoi(optarg);
+                if (tea.cs < 5 || tea.cs > 8) {
+                    fprintf(stderr, "number of data bits is illegal\n");
+                    exit(1);
+                }
+                break;
 
-        case 't':
-        tea.stopbits = atoi(optarg);
-        if ( tea.stopbits !=1 && tea.stopbits != 2 ) {
-            fprintf(stderr, "number of stop bits is illegal\n");
-            exit(1);
-        }
-        break;
+            case 't':
+                tea.stopbits = atoi(optarg);
+                if (tea.stopbits != 1 && tea.stopbits != 2) {
+                    fprintf(stderr, "number of stop bits is illegal\n");
+                    exit(1);
+                }
+                break;
 
-        case 'p':
-        if (0 == strcmp(optarg, "even"))
-            tea.p = SER_PARITY_EVEN;
-        else if (0 == strcmp(optarg, "odd"))
-            tea.p = SER_PARITY_ODD;
-        else {
+            case 'p':
+                if (0 == strcmp(optarg, "even"))
+                    tea.p = SER_PARITY_EVEN;
+                else if (0 == strcmp(optarg, "odd"))
+                    tea.p = SER_PARITY_ODD;
+                else {
 
-            fprintf(stderr, "parity type is illegal\n");
-            exit(1);
-        }
-        break;
+                    fprintf(stderr, "parity type is illegal\n");
+                    exit(1);
+                }
+                break;
 
-        case 'f':
-        if (0 == strcmp(optarg, "xon"))
-            tea.flow = SER_FLOW_XON;
-        else if (0 == strcmp(optarg, "none"))
-            tea.flow = SER_FLOW_NONE;
-        else {
-            fprintf(stderr, "flow control type is illegal\n");
-            return 0;
-        }
-        break;
+            case 'f':
+                if (0 == strcmp(optarg, "xon"))
+                    tea.flow = SER_FLOW_XON;
+                else if (0 == strcmp(optarg, "none"))
+                    tea.flow = SER_FLOW_NONE;
+                else {
+                    fprintf(stderr, "flow control type is illegal\n");
+                    return 0;
+                }
+                break;
 
-        default:
-        exit(1);
+            default:
+                exit(1);
         }
     }
 
     number = scan_serial();
-    if ( number == 0 )
-    {
+    if (number == 0) {
         fprintf(stderr, "No serial port or Permission denied\n");
         exit(1);
     }
-
 
     if (telnet) {
         char service[100];
@@ -261,8 +257,7 @@ int main(int argc, char *argv[])
 
         sprintf(service, "%d", tea.port);
         start_telnet_server(&tea, NULL, service);
-    }
-    else {
+    } else {
         aev_loop_init(&tea.loop);
         new_terminal(&tea, device, 0, 1, tty_read);
     }

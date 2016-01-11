@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _TELNET_H_
 
 int
-start_telnet_server(tea_t *tea, const char *ip, const char * port);
+start_telnet_server(tea_t* tea, const char* ip, const char* port);
 
 #endif
-

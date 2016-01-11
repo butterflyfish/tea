@@ -33,7 +33,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "serial.h"
 
-typedef struct tea {
+typedef struct tea
+{
 
     struct aev_loop loop;
 
@@ -50,10 +51,9 @@ typedef struct tea {
     enum ser_flow_ctrl flow;
 } tea_t;
 
-#define TEA_ESC_KEY           29 /* Ctrl-] */
-#define TEA_ESC_KEY_STR       "Ctrl-]"
+#define TEA_ESC_KEY 29 /* Ctrl-] */
+#define TEA_ESC_KEY_STR "Ctrl-]"
 
-#define TEA_PID_FILE   "/var/run/tea.pid"
-
+#define TEA_PID_FILE "/var/run/tea.pid"
 
 #endif

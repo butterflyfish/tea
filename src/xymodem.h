@@ -34,12 +34,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/types.h>
 #include <stdint.h>
 
-#define SOH   0x01
-#define STX   0x02
-#define EOT   0x04
-#define ACK   0x06
-#define NAK   0x15
-#define CAN   0x18
+#define SOH 0x01
+#define STX 0x02
+#define EOT 0x04
+#define ACK 0x06
+#define NAK 0x15
+#define CAN 0x18
 #define CTRLZ 0x1A
 
 // #define _XYMODEM_DEBUG_
@@ -49,8 +49,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define debug(fmt, ...)
 #endif
 
-
-enum xymodem_state {
+enum xymodem_state
+{
 
     XYMODEM_WAIT_START = 1, /* wait start char 'C' or NAK */
     XYMODEM_SEND_PKT,       /* send packet */
@@ -58,39 +58,38 @@ enum xymodem_state {
     XYMODEM_DONE,
 };
 
-typedef void (*log_t)(void *data, char *fmt, ...);
+typedef void (*log_t)(void* data, char* fmt, ...);
 
-struct xymodem {
+struct xymodem
+{
 
-    off_t size;      /* size of buffer to be sent */
-    uint8_t * buf;   /* point to data buffer to be sent */
-    off_t offset;    /* offset of daa buffer */
+    off_t size;   /* size of buffer to be sent */
+    uint8_t* buf; /* point to data buffer to be sent */
+    off_t offset; /* offset of daa buffer */
 
     enum xymodem_state state;
-    int crc;     /* 1: CRC; else check sum */
-    int mtu;     /* size of data unit */
+    int crc; /* 1: CRC; else check sum */
+    int mtu; /* size of data unit */
 
     int ttyfd; /* fd of serial device */
     int fd;    /* fd of file *filename* */
-    char *filename;
+    char* filename;
 
-    int (*openf)(struct xymodem *xy, char *file);
-    int (*closef)(struct xymodem *xy);
-    uint8_t (*inbyte)(struct xymodem *xy, int timeout);
-    uint8_t (*outbyte)(struct xymodem *xy, uint8_t byte);
-    int  (*writepkt)(struct xymodem *xy, uint8_t head[3], uint8_t sum[2]);
-    void (*processbar)(struct xymodem *xy);
+    int (*openf)(struct xymodem* xy, char* file);
+    int (*closef)(struct xymodem* xy);
+    uint8_t (*inbyte)(struct xymodem* xy, int timeout);
+    uint8_t (*outbyte)(struct xymodem* xy, uint8_t byte);
+    int (*writepkt)(struct xymodem* xy, uint8_t head[3], uint8_t sum[2]);
+    void (*processbar)(struct xymodem* xy);
 
     log_t log;
-    void *data;
-
+    void* data;
 };
 
-
 void
-xymodem_io_init(struct xymodem *xy, log_t log, void *data);
+xymodem_io_init(struct xymodem* xy, log_t log, void* data);
 
 int
-xymodem_send_file(struct xymodem *xy, int mtu, int ttyfd, char *file);
+xymodem_send_file(struct xymodem* xy, int mtu, int ttyfd, char* file);
 
 #endif
