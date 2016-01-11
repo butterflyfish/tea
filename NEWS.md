@@ -1,4 +1,4 @@
-## version 2016.x.x(not released)
+## version 2016.Jan.11
 
   - fix build failure on Mac OS
   - export serial ports over telnet

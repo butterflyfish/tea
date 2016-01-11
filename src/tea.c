@@ -39,7 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tea.h"
 #include "telnet.h"
 
-static char* ver = "developing";
+static char* ver = "2016.Jan.11";
 
 static tea_t tea = {
 
